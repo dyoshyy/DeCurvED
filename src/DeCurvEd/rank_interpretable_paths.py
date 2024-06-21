@@ -1,11 +1,11 @@
 import argparse
+import json
 import os
 import os.path as osp
+
 import numpy as np
 import pandas as pd
-import json
 from lib import create_summarizing_gif
-
 
 ########################################################################################################################
 ## The following attributes are available (as long as they have been used to traverse attribute space using           ##

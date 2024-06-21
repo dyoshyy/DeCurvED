@@ -1,23 +1,24 @@
-import sys
-import os
-import os.path as osp
 import argparse
 import hashlib
+import os
+import os.path as osp
+import sys
 import tarfile
 import time
 import urllib.request
+
 from lib import (
-    GAN_WEIGHTS,
-    SFD,
     ARCFACE,
-    FAIRFACE,
-    HOPENET,
     AUDET,
     CELEBA_ATTRIBUTES,
-    SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25,
-    SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35,
+    FAIRFACE,
+    GAN_WEIGHTS,
+    HOPENET,
+    SFD,
     BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25,
     ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2,
+    SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35,
+    SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25,
     StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2,
 )
 

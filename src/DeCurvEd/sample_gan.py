@@ -1,13 +1,14 @@
+import argparse
+import json
 import os
 import os.path as osp
-import argparse
-import torch
-import json
-from torch import nn
 from hashlib import sha1
-from torchvision.transforms import ToPILImage
+
+import torch
 from lib import *
-from models.gan_load import build_biggan, build_proggan, build_stylegan2, build_sngan
+from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
+from torch import nn
+from torchvision.transforms import ToPILImage
 
 
 def tensor2image(tensor, adaptive=False):

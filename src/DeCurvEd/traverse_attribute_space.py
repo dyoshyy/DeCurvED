@@ -1,23 +1,24 @@
 import argparse
+import json
 import os
 import os.path as osp
-import torch
-import torch.nn as nn
-from torch.utils import data
-import numpy as np
-import json
-import torchvision
-from torchvision import transforms
-from lib import update_progress, update_stdout
-from lib import (
-    PathImages,
-    IDComparator,
-    SFDDetector,
-    Hopenet,
-    AUdetector,
-    celeba_attr_predictor,
-)
 
+import numpy as np
+import torch
+import torchvision
+from lib import (
+    AUdetector,
+    Hopenet,
+    IDComparator,
+    PathImages,
+    SFDDetector,
+    celeba_attr_predictor,
+    update_progress,
+    update_stdout,
+)
+from torch import nn
+from torch.utils import data
+from torchvision import transforms
 
 # Action Units
 AUs = {

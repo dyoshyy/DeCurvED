@@ -1,20 +1,21 @@
 import argparse
-from audioop import reverse
-import cv2
-import pickle
+import json
 import os
 import os.path as osp
+import pickle
+from audioop import reverse
 from tabnanny import verbose
+
+import cv2
 import numpy as np
 import torch
-from torch import nn
-from PIL import Image
-import json
 import torchvision
+from lib import *
+from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
+from PIL import Image
+from torch import nn
 from torchvision import transforms
 from torchvision.transforms import ToPILImage
-from lib import *
-from models.gan_load import build_biggan, build_proggan, build_stylegan2, build_sngan
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False

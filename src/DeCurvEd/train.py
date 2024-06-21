@@ -1,9 +1,10 @@
 import argparse
 import random
+
 import numpy as np
 import torch
-from lib import *
-from models.gan_load import build_biggan, build_proggan, build_stylegan2, build_sngan
+from lib import *  # noqa: F403
+from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
 
 
 def main():
@@ -49,10 +50,10 @@ def main():
         --cuda                     : use CUDA during training (default)
         --no-cuda                  : do NOT use CUDA during training
         ================================================================================================================
-    """
+    """  # noqa: E501
     parser = argparse.ArgumentParser(description="WarpedGANSpace training script")
 
-    # === Pre-trained GAN Generator (G) ============================================================================== #
+    # === Pre-trained GAN Generator (G) ============================================================================== #  # noqa: E501
     parser.add_argument(
         "--gan-type",
         type=str,
@@ -83,7 +84,7 @@ def main():
         help="search latent paths in StyleGAN2's W-space",
     )
 
-    # === Support Sets (S) ======================================================================== #
+    # === Support Sets (S) ======================================================================== #  # noqa: E501
     parser.add_argument(
         "-K",
         "--num-support-sets",
@@ -208,7 +209,7 @@ def main():
 
     if args.flow == "linear":
         args.max_latent_ind = args.num_support_sets
-        if args.gan_type == "ProgGAN" or args.gan_type == "SNGAN_MNIST":
+        if args.gan_type in ("ProgGAN", "SNGAN_MNIST"):
             args.deformator = "PROJECTIVE"
         else:
             args.deformator = "ORTHO"
@@ -325,7 +326,7 @@ def main():
         )
 
     if args.small_dim:
-        if args.gan_type == "ProgGAN" or args.gan_type == "StyleGAN2":
+        if args.gan_type in ("ProgGAN", "StyleGAN2"):
             args.small_dim = 200
         else:
             args.small_dim = G.dim_z // 2

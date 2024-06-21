@@ -1,11 +1,13 @@
 import json
+
 import numpy as np
 import torch
 from torch import nn
+
 from models.BigGAN import BigGAN, utils
 from models.ProgGAN.model import Generator as ProgGANGenerator
-from models.SNGAN.sn_gen_resnet import SN_RES_GEN_CONFIGS, make_resnet_generator
 from models.SNGAN.distribution import NormalDistribution
+from models.SNGAN.sn_gen_resnet import SN_RES_GEN_CONFIGS, make_resnet_generator
 
 try:
     from models.StyleGAN2.model import Generator as StyleGAN2Generator
@@ -13,11 +15,11 @@ except Exception as e:
     print("Failed loading StyleGAN2: {}".format(e))
 
 
-########################################################################################################################
-##                                                                                                                    ##
-##                                                     [ SNGAN ]                                                      ##
-##                                                                                                                    ##
-########################################################################################################################
+########################################################################################
+##                                                                                    ##
+##                                 [ SNGAN ]                                          ##
+##                                                                                    ##
+########################################################################################
 class SNGANWrapper(nn.Module):
     def __init__(self, G):
         super(SNGANWrapper, self).__init__()
@@ -62,11 +64,11 @@ def build_sngan(pretrained_gan_weights, gan_type):
     return SNGANWrapper(G)
 
 
-########################################################################################################################
-##                                                                                                                    ##
-##                                                   [ BigGAN ]                                                       ##
-##                                                                                                                    ##
-########################################################################################################################
+########################################################################################
+##                                                                                    ##
+##                                 [ BigGAN ]                                         ##
+##                                                                                    ##
+########################################################################################
 class BigGANWrapper(nn.Module):
     def __init__(self, G, target_classes=(239,)):
         super(BigGANWrapper, self).__init__()
@@ -112,11 +114,11 @@ def build_biggan(pretrained_gan_weights, target_classes):
     return BigGANWrapper(G, target_classes)
 
 
-########################################################################################################################
-##                                                                                                                    ##
-##                                                    [ ProgGAN ]                                                     ##
-##                                                                                                                    ##
-########################################################################################################################
+########################################################################################
+##                                                                                    ##
+##                                 [ ProgGAN ]                                        ##
+##                                                                                    ##
+########################################################################################
 class ProgGANWrapper(nn.Module):
     def __init__(self, G):
         super(ProgGANWrapper, self).__init__()
@@ -140,11 +142,11 @@ def build_proggan(pretrained_gan_weights):
     return ProgGANWrapper(G)
 
 
-########################################################################################################################
-##                                                                                                                    ##
-##                                                  [ StyleGAN2 ]                                                     ##
-##                                                                                                                    ##
-########################################################################################################################
+########################################################################################
+##                                                                                    ##
+##                                 [ StyleGAN2 ]                                      ##
+##                                                                                    ##
+########################################################################################
 class StyleGAN2Wrapper(nn.Module):
     def __init__(self, G, shift_in_w_space):
         super(StyleGAN2Wrapper, self).__init__()

@@ -23,3 +23,6 @@ results/
 
 # trained models
 *.pth
+
+# pretrained models
+models/

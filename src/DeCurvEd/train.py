@@ -3,7 +3,18 @@ import random
 
 import numpy as np
 import torch
-from lib import *  # noqa: F403
+from lib import (
+    GAN_RESOLUTIONS,
+    GAN_WEIGHTS,
+    RECONSTRUCTOR_TYPES,
+    DeformatorType,
+    LatentDeformator,
+    Reconstructor,
+    SupportSets,
+    Trainer,
+    cnf,
+    create_exp_dir,
+)
 from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
 
 
@@ -207,6 +218,39 @@ def main():
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
 
+    # === BigGAN ===
+    if args.gan_type == "BigGAN":
+        G = build_biggan(
+            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
+                GAN_RESOLUTIONS[args.gan_type]
+            ],
+            target_classes=args.biggan_target_classes,
+        )
+    # === ProgGAN ===
+    elif args.gan_type == "ProgGAN":
+        G = build_proggan(
+            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
+                GAN_RESOLUTIONS[args.gan_type]
+            ]
+        )
+    # === StyleGAN ===
+    elif args.gan_type == "StyleGAN2":
+        G = build_stylegan2(
+            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
+                args.stylegan2_resolution
+            ],
+            resolution=args.stylegan2_resolution,
+            shift_in_w_space=args.shift_in_w_space,
+        )
+    # === Spectrally Normalised GAN (SNGAN) ===
+    else:
+        G = build_sngan(
+            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
+                GAN_RESOLUTIONS[args.gan_type]
+            ],
+            gan_type=args.gan_type,
+        )
+
     if args.flow == "linear":
         args.max_latent_ind = args.num_support_sets
         if args.gan_type in ("ProgGAN", "SNGAN_MNIST"):
@@ -254,39 +298,6 @@ def main():
             else GAN_WEIGHTS[args.gan_type]["weights"][GAN_RESOLUTIONS[args.gan_type]]
         )
     )
-
-    # === BigGAN ===
-    if args.gan_type == "BigGAN":
-        G = build_biggan(
-            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
-                GAN_RESOLUTIONS[args.gan_type]
-            ],
-            target_classes=args.biggan_target_classes,
-        )
-    # === ProgGAN ===
-    elif args.gan_type == "ProgGAN":
-        G = build_proggan(
-            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
-                GAN_RESOLUTIONS[args.gan_type]
-            ]
-        )
-    # === StyleGAN ===
-    elif args.gan_type == "StyleGAN2":
-        G = build_stylegan2(
-            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
-                args.stylegan2_resolution
-            ],
-            resolution=args.stylegan2_resolution,
-            shift_in_w_space=args.shift_in_w_space,
-        )
-    # === Spectrally Normalised GAN (SNGAN) ===
-    else:
-        G = build_sngan(
-            pretrained_gan_weights=GAN_WEIGHTS[args.gan_type]["weights"][
-                GAN_RESOLUTIONS[args.gan_type]
-            ],
-            gan_type=args.gan_type,
-        )
 
     # Build Support Sets model S
     print("#. Build Support Sets S...")

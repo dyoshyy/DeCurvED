@@ -5,10 +5,17 @@ import os.path as osp
 from hashlib import sha1
 
 import torch
-from lib import *
-from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
+from lib import (
+    GAN_RESOLUTIONS,
+    GAN_WEIGHTS,
+    sample_z,
+    update_progress,
+    update_stdout,
+)
 from torch import nn
 from torchvision.transforms import ToPILImage
+
+from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
 
 
 def tensor2image(tensor, adaptive=False):

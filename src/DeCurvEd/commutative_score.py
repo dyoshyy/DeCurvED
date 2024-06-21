@@ -10,12 +10,26 @@ import cv2
 import numpy as np
 import torch
 import torchvision
-from lib import *
-from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
+from lib import (
+    GAN_RESOLUTIONS,
+    GAN_WEIGHTS,
+    DeformatorType,
+    Hopenet,
+    IDComparator,
+    LatentDeformator,
+    SFDDetector,
+    SupportSets,
+    celeba_attr_predictor,
+    cnf,
+    update_progress,
+    update_stdout,
+)
 from PIL import Image
 from torch import nn
 from torchvision import transforms
 from torchvision.transforms import ToPILImage
+
+from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
 
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False

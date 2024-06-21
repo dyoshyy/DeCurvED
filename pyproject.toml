@@ -1,19 +1,27 @@
 [project]
-name = "pytorch-tutorial"
+name = "DeCurvEd"
 version = "0.1.0"
-description = "learn basics"
+description = "Deep Curvilinear Editing"
 dependencies = [
-    "torch>=2.3.0",
     "numpy>=1.26.4",
+    "ipykernel>=6.29.4",
+    "torch>=2.3.0",
+    "scipy>=1.13.0",
+    "pillow>=10.3.0",
     "torchvision>=0.18.0",
-    "matplotlib>=3.8.4",
     "tensorboard>=2.16.2",
+    "opencv-python>=4.9.0.80",
+    "tqdm>=4.66.2",
+    "scikit-image>=0.23.2",
+    "matplotlib>=3.8.4",
+    "torchdiffeq>=0.2.3",
+    "pandas>=2.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
 
 [project.scripts]
-main = 'pytorch_tutorial:main'
+main = 'DeCurvEd:main'
 
 [build-system]
 requires = ["hatchling"]
@@ -27,7 +35,7 @@ dev-dependencies = []
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pytorch_tutorial"]
+packages = ["src/DeCurvEd"]
 
 # Lint/Formatter非依存のルール
 [tool.ruff]
@@ -35,7 +43,7 @@ packages = ["src/pytorch_tutorial"]
 # excludeを設定するとデフォルトで設定されている.venv配下などの設定が上書きされるため要注意
 # extend-exclude = ["src/something.py"]
 # 行文字数
-line-length = 88
+# line-length = 88
 # インデント幅
 indent-width = 4
 

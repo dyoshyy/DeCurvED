@@ -69,10 +69,15 @@ Most of our codes were made by modifying the codes taken from other repositories
   - `lib/odefunc.py`
 
 
-## How to use
+## How to create virtual env
+
+### Install rye
+```sh
+curl -sSf https://rye.astral.sh/get | bash
+```
 
 ### Install dependencies and create virtualenv.
-```
+```sh
 rye sync
 ```
 
@@ -80,7 +85,7 @@ rye sync
 ```
 make run
 ```
-`src/pytorch_tutorial/main.py` will be executed.
+`src/DeCurvEd/main.py` will be executed.
 
 ### Activate virtualenv.
 ```

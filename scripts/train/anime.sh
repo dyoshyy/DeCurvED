@@ -38,7 +38,7 @@ if $tensorboard ; then
   tb="--tensorboard"
 fi
 
-python train.py $tb \
+python ./src/DeCurvEd/train.py $tb \
                 --gan-type=${gan_type} \
                 --reconstructor-type=${reconstructor_type} \
                 $learn_a \

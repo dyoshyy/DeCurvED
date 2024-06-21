@@ -46,7 +46,7 @@ if $tensorboard ; then
   tb="--tensorboard"
 fi
 
-python train.py $tb \
+python ./src/DeCurvEd/train.py $tb \
                 --gan-type=${gan_type} \
                 --z-truncation=${z_truncation} \
                 --stylegan2-resolution=${stylegan2_resolution} \

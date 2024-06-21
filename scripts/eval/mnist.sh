@@ -12,7 +12,7 @@ declare -a EXPERIMENTS=("experiments/complete/SNGAN_MNIST-LeNet-K200000-D128-eps
 for exp in "${EXPERIMENTS[@]}"
 do
   # Traverse latent space
-  python traverse_latent_space.py -v --gif \
+  python ./src/DeCurvEd/traverse_latent_space.py -v --gif \
                                   --exp="${exp}" \
                                   --pool=${pool} \
                                   --eps=${eps} \

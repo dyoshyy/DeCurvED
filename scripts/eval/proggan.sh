@@ -21,7 +21,7 @@ declare -a ATTRIBUTE_GROUPS=("all")
 for exp in "${EXPERIMENTS[@]}"
 do
   # --- Traverse latent space ---------------------------------------------------------------------------------------- #
-  python traverse_latent_space.py -v --gif \
+  python ./src/DeCurvEd/traverse_latent_space.py -v --gif \
                                   --exp="${exp}" \
                                   --pool=${pool} \
                                   --eps=${eps} \
@@ -31,7 +31,7 @@ do
   # ------------------------------------------------------------------------------------------------------------------ #
 
   # --- Traverse attribute space ------------------------------------------------------------------------------------- #
-  python traverse_attribute_space.py -v \
+  python ./src/DeCurvEd/traverse_attribute_space.py -v \
                                      --exp="${exp}" \
                                      --pool=${pool} \
                                      --eps=${eps} \
@@ -41,7 +41,7 @@ do
   # --- Rank interpretable paths for all given attribute groups ------------------------------------------------------ #
   for attr_group in "${ATTRIBUTE_GROUPS[@]}"
   do
-    python rank_interpretable_paths.py -v --exp="${exp}" \
+    python ./src/DeCurvEd/rank_interpretable_paths.py -v --exp="${exp}" \
                                           --pool=${pool} \
                                           --eps=${eps} \
                                           --shift-steps=${shift_steps} \

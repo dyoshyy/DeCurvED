@@ -13,7 +13,15 @@ class SequentialFlow(nn.Module):
         super(SequentialFlow, self).__init__()
         self.chain = nn.ModuleList(layer_list)
 
-    def forward(self, x, support_sets_mask, target_shift_magnitudes, logpx=None, inds=None, integration_times=None):
+    def forward(
+        self,
+        x,
+        support_sets_mask,
+        target_shift_magnitudes,
+        logpx=None,
+        inds=None,
+        integration_times=None,
+    ):
         """
         x: original latent codes
         support_set_mask: index k
@@ -45,7 +53,7 @@ class SequentialFlow(nn.Module):
         # shift in cartesianized latent space
         x_new = x
         for i in range(len(support_sets_mask)):
-            x_new[i+1] = x_new[i] + support_sets_mask[i]
+            x_new[i + 1] = x_new[i] + support_sets_mask[i]
 
         # map to original latent space
         for i in inds_reverse:
@@ -54,16 +62,27 @@ class SequentialFlow(nn.Module):
 
 
 class CNF(nn.Module):
-    def __init__(self, odefunc, T=1.0, train_T=False, regularization_fns=None,
-                 solver='dopri5', atol=1e-5, rtol=1e-5, use_adjoint=True):
+    def __init__(
+        self,
+        odefunc,
+        T=1.0,
+        train_T=False,
+        regularization_fns=None,
+        solver="dopri5",
+        atol=1e-5,
+        rtol=1e-5,
+        use_adjoint=True,
+    ):
         super(CNF, self).__init__()
         self.train_T = train_T
         self.T = T
         if train_T:
-            self.register_parameter("sqrt_end_time", nn.Parameter(torch.sqrt(torch.tensor(T))))
+            self.register_parameter(
+                "sqrt_end_time", nn.Parameter(torch.sqrt(torch.tensor(T)))
+            )
             print("Training T :", self.T)
         else:
-            print('not training T :', self.T)
+            print("not training T :", self.T)
 
         if regularization_fns is not None and len(regularization_fns) > 0:
             raise NotImplementedError("Regularization not supported")
@@ -88,10 +107,15 @@ class CNF(nn.Module):
         if integration_times is None:
             if self.train_T:
                 integration_times = torch.stack(
-                    [torch.tensor(0.0).to(x.device), self.sqrt_end_time * self.sqrt_end_time]
+                    [
+                        torch.tensor(0.0).to(x.device),
+                        self.sqrt_end_time * self.sqrt_end_time,
+                    ]
                 ).to(x.device)
             else:
-                integration_times = torch.tensor([0., self.T], requires_grad=False).to(x.device)
+                integration_times = torch.tensor([0.0, self.T], requires_grad=False).to(
+                    x.device
+                )
 
         if reverse:
             integration_times = _flip(integration_times, 0)
@@ -135,5 +159,7 @@ class CNF(nn.Module):
 
 def _flip(x, dim):
     indices = [slice(None)] * x.dim()
-    indices[dim] = torch.arange(x.size(dim) - 1, -1, -1, dtype=torch.long, device=x.device)
+    indices[dim] = torch.arange(
+        x.size(dim) - 1, -1, -1, dtype=torch.long, device=x.device
+    )
     return x[tuple(indices)]

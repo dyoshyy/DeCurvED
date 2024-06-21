@@ -9,7 +9,14 @@ import json
 import torchvision
 from torchvision import transforms
 from lib import update_progress, update_stdout
-from lib import PathImages, IDComparator, SFDDetector, Hopenet, AUdetector, celeba_attr_predictor
+from lib import (
+    PathImages,
+    IDComparator,
+    SFDDetector,
+    Hopenet,
+    AUdetector,
+    celeba_attr_predictor,
+)
 
 
 # Action Units
@@ -25,7 +32,7 @@ AUs = {
     "au_17": "Chin_Raiser",
     "au_20": "Lip_stretcher",
     "au_25": "Lips_part",
-    "au_26": "Jaw_Drop"
+    "au_26": "Jaw_Drop",
 }
 
 
@@ -108,19 +115,44 @@ def main():
             International Conference on Computer Vision. 2021.
 
     """
-    parser = argparse.ArgumentParser(description="WarpedGANSpace attribute space traversal script")
-    parser.add_argument('-v', '--verbose', action='store_true', help="set verbose mode on")
-    parser.add_argument('--exp', type=str, required=True, help="set experiment's model dir (created by `train.py` and "
-                                                               "used by `traverse_latent_space.py`.)")
-    parser.add_argument('--pool', type=str, required=True, help="choose pool of pre-defined latent codes and their "
-                                                                "latent traversals (should be a subdirectory of "
-                                                                "experiments/<exp>/results/, as created by "
-                                                                "traverse_latent_space.py)")
-    parser.add_argument('--shift-steps', type=int, default=16, help="number of shifts per positive/negative path "
-                                                                    "direction")
-    parser.add_argument('--eps', type=float, help="shift magnitude")
-    parser.add_argument('--cuda', dest='cuda', action='store_true', help="use CUDA during training")
-    parser.add_argument('--no-cuda', dest='cuda', action='store_false', help="do NOT use CUDA during training")
+    parser = argparse.ArgumentParser(
+        description="WarpedGANSpace attribute space traversal script"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="set verbose mode on"
+    )
+    parser.add_argument(
+        "--exp",
+        type=str,
+        required=True,
+        help="set experiment's model dir (created by `train.py` and "
+        "used by `traverse_latent_space.py`.)",
+    )
+    parser.add_argument(
+        "--pool",
+        type=str,
+        required=True,
+        help="choose pool of pre-defined latent codes and their "
+        "latent traversals (should be a subdirectory of "
+        "experiments/<exp>/results/, as created by "
+        "traverse_latent_space.py)",
+    )
+    parser.add_argument(
+        "--shift-steps",
+        type=int,
+        default=16,
+        help="number of shifts per positive/negative path " "direction",
+    )
+    parser.add_argument("--eps", type=float, help="shift magnitude")
+    parser.add_argument(
+        "--cuda", dest="cuda", action="store_true", help="use CUDA during training"
+    )
+    parser.add_argument(
+        "--no-cuda",
+        dest="cuda",
+        action="store_false",
+        help="do NOT use CUDA during training",
+    )
     parser.set_defaults(cuda=True)
 
     # Parse given arguments
@@ -128,33 +160,49 @@ def main():
     torch.set_grad_enabled(False)
 
     # Check given experiment's directory
-    latent_traversal_dir = osp.join(args.exp, 'results', args.pool)
+    latent_traversal_dir = osp.join(args.exp, "results", args.pool)
     if not osp.isdir(args.exp):
-        raise NotADirectoryError("Error: invalid experiment's directory: {}".format(args.exp))
+        raise NotADirectoryError(
+            "Error: invalid experiment's directory: {}".format(args.exp)
+        )
     else:
         # Get gan_type
-        args_json_file = osp.join(args.exp, 'args.json')
+        args_json_file = osp.join(args.exp, "args.json")
         if not osp.isfile(args_json_file):
             raise FileNotFoundError("File not found: {}".format(args_json_file))
         args_json = ModelArgs(**json.load(open(args_json_file)))
         gan_type = args_json.__dict__["gan_type"]
         # Check results directory
         if not osp.isdir(latent_traversal_dir):
-            raise NotADirectoryError("Error: pool directory {} not found under {}".format(
-                args.pool, osp.join(args.exp, 'results')))
+            raise NotADirectoryError(
+                "Error: pool directory {} not found under {}".format(
+                    args.pool, osp.join(args.exp, "results")
+                )
+            )
 
     # Get shift magnitude steps / total length sub-directory(ies) under the given latent traversals directory
     if (args.shift_steps is None) and (args.eps is None):
-        latent_space_traversal_configs = [dI for dI in os.listdir(latent_traversal_dir) if
-                                          osp.isdir(os.path.join(latent_traversal_dir, dI))]
+        latent_space_traversal_configs = [
+            dI
+            for dI in os.listdir(latent_traversal_dir)
+            if osp.isdir(os.path.join(latent_traversal_dir, dI))
+        ]
     else:
-        latent_space_traversal_configs = ['{}_{}_{}'.format(2 * args.shift_steps,
-                                                            args.eps,
-                                                            round(2 * args.shift_steps * args.eps, 3))]
+        latent_space_traversal_configs = [
+            "{}_{}_{}".format(
+                2 * args.shift_steps,
+                args.eps,
+                round(2 * args.shift_steps * args.eps, 3),
+            )
+        ]
 
     if args.verbose:
         print("#. Calculate attribute traversals in {}".format(latent_traversal_dir))
-        print("  \\__.Latent space traversal configs: {}".format(latent_space_traversal_configs))
+        print(
+            "  \\__.Latent space traversal configs: {}".format(
+                latent_space_traversal_configs
+            )
+        )
 
     # Use CUDA boolean
     use_cuda = args.cuda and torch.cuda.is_available()
@@ -166,9 +214,13 @@ def main():
     ####################################################################################################################
 
     # Define SFD face detector model
-    face_detector = SFDDetector(path_to_detector='models/pretrained/sfd/s3fd-619a316812.pth',
-                                device="cuda" if use_cuda else "cpu")
-    face_detector_trans = transforms.Compose([transforms.Resize(256), transforms.CenterCrop(256)])
+    face_detector = SFDDetector(
+        path_to_detector="models/pretrained/sfd/s3fd-619a316812.pth",
+        device="cuda" if use_cuda else "cpu",
+    )
+    face_detector_trans = transforms.Compose(
+        [transforms.Resize(256), transforms.CenterCrop(256)]
+    )
 
     # Define ID comparator based on ArcFace
     id_comp = IDComparator()
@@ -179,14 +231,16 @@ def main():
     # Define FairFace model for predicting gender, age, and race
     fairface = torchvision.models.resnet34(pretrained=True)
     fairface.fc = nn.Linear(fairface.fc.in_features, 18)
-    fairface.load_state_dict(torch.load('models/pretrained/fairface/fairface_alldata_4race_20191111.pt'))
+    fairface.load_state_dict(
+        torch.load("models/pretrained/fairface/fairface_alldata_4race_20191111.pt")
+    )
     fairface.eval()
     if use_cuda:
         fairface.cuda()
 
     # Define Hopenet pose estimator
     hopenet = Hopenet(torchvision.models.resnet.Bottleneck, [3, 4, 6, 3], 66)
-    hopenet.load_state_dict(torch.load('models/pretrained/hopenet/hopenet_alpha2.pkl'))
+    hopenet.load_state_dict(torch.load("models/pretrained/hopenet/hopenet_alpha2.pkl"))
     hopenet.eval()
     if use_cuda:
         hopenet.cuda()
@@ -201,23 +255,37 @@ def main():
         idx_tensor = idx_tensor.cuda()
 
     # Define face transformation required by Hopenet and FairFace
-    face_trans_hope_fair = transforms.Compose([transforms.Resize(224),
-                                               transforms.CenterCrop(224),
-                                               transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                                    std=[0.229, 0.224, 0.225])])
+    face_trans_hope_fair = transforms.Compose(
+        [
+            transforms.Resize(224),
+            transforms.CenterCrop(224),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
     # Define AU detector
-    AU_detector = AUdetector(au_model_path='models/pretrained/au_detector/disfa_adaptation_f0.pth', use_cuda=use_cuda)
+    AU_detector = AUdetector(
+        au_model_path="models/pretrained/au_detector/disfa_adaptation_f0.pth",
+        use_cuda=use_cuda,
+    )
 
     # Define face transformation required by AU detector
-    face_trans_au = transforms.Compose([transforms.Resize(256), transforms.CenterCrop(256)])
+    face_trans_au = transforms.Compose(
+        [transforms.Resize(256), transforms.CenterCrop(256)]
+    )
 
     # Define CelebA attributes predictor
-    celeba_5 = celeba_attr_predictor(attr_file='lib/evaluation/celeba_attributes/attributes_5.json',
-                                     pretrained='models/pretrained/celeba_attributes/eval_predictor.pth.tar').eval()
-    celeba_5_trans = transforms.Compose([transforms.Resize(224),
-                                         transforms.CenterCrop(224),
-                                         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+    celeba_5 = celeba_attr_predictor(
+        attr_file="lib/evaluation/celeba_attributes/attributes_5.json",
+        pretrained="models/pretrained/celeba_attributes/eval_predictor.pth.tar",
+    ).eval()
+    celeba_5_trans = transforms.Compose(
+        [
+            transforms.Resize(224),
+            transforms.CenterCrop(224),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
     celeba_5_softmax = nn.Softmax(dim=1)
 
     if use_cuda:
@@ -233,10 +301,20 @@ def main():
             print("       \\__.Latent space traversal config: {}".format(l_config))
 
         # Navigate all hashes directories (i.e., sample latent codes)
-        hashes_dir = osp.join(latent_traversal_dir, '{}_{}_{}'.format(2 * args.shift_steps, args.eps,
-                                                                      round(2 * args.shift_steps * args.eps, 3)))
-        hashes = [dI for dI in os.listdir(hashes_dir)
-                  if osp.isdir(os.path.join(hashes_dir, dI)) and dI not in ('paths_gifs', 'validation_results')]
+        hashes_dir = osp.join(
+            latent_traversal_dir,
+            "{}_{}_{}".format(
+                2 * args.shift_steps,
+                args.eps,
+                round(2 * args.shift_steps * args.eps, 3),
+            ),
+        )
+        hashes = [
+            dI
+            for dI in os.listdir(hashes_dir)
+            if osp.isdir(os.path.join(hashes_dir, dI))
+            and dI not in ("paths_gifs", "validation_results")
+        ]
 
         # For each hash (i.e., for each latent code) and for all paths (warping functions), find the attributes
         # predictions across all image sequences
@@ -244,16 +322,20 @@ def main():
         for h in hashes:
             hash_cnt += 1
             if args.verbose:
-                print("           \\__.hash: {} [{}/{}]".format(h, hash_cnt, len(hashes)))
+                print(
+                    "           \\__.hash: {} [{}/{}]".format(h, hash_cnt, len(hashes))
+                )
 
             h_dir = osp.join(hashes_dir, h)
 
             # Load path latent codes and get number of paths and points per path
-            paths_latent_codes = torch.load(osp.join(h_dir, 'paths_latent_codes.pt'),
-                                            map_location=lambda storage, loc: storage)
+            paths_latent_codes = torch.load(
+                osp.join(h_dir, "paths_latent_codes.pt"),
+                map_location=lambda storage, loc: storage,
+            )
             num_of_paths = paths_latent_codes.size()[0]
             num_of_img_per_path = paths_latent_codes.size()[1]
-            path_images_dir = osp.join(h_dir, 'paths_images')
+            path_images_dir = osp.join(h_dir, "paths_images")
 
             # Define json dictionaries for the various evaluation predictions
             face_bbox_dict = dict()
@@ -288,20 +370,28 @@ def main():
 
             for d in range(num_of_paths):
                 if args.verbose:
-                    update_progress("               \\__path: {:03d}/{:03d} ".format(d + 1, num_of_paths),
-                                    num_of_paths, d + 1)
+                    update_progress(
+                        "               \\__path: {:03d}/{:03d} ".format(
+                            d + 1, num_of_paths
+                        ),
+                        num_of_paths,
+                        d + 1,
+                    )
 
                 ########################################################################################################
                 ##                                                                                                    ##
                 ##                                      [ Image Data Loader ]                                         ##
                 ##                                                                                                    ##
                 ########################################################################################################
-                data_loader = data.DataLoader(dataset=PathImages(root_path=osp.join(path_images_dir,
-                                                                                    'path_{:03d}'.format(d))),
-                                              batch_size=num_of_img_per_path,
-                                              num_workers=0,
-                                              shuffle=False,
-                                              pin_memory=use_cuda)
+                data_loader = data.DataLoader(
+                    dataset=PathImages(
+                        root_path=osp.join(path_images_dir, "path_{:03d}".format(d))
+                    ),
+                    batch_size=num_of_img_per_path,
+                    num_workers=0,
+                    shuffle=False,
+                    pin_memory=use_cuda,
+                )
 
                 path_images_tensor = next(iter(data_loader))
                 if use_cuda:
@@ -315,7 +405,9 @@ def main():
                 ########################################################################################################
                 # Detect faces in path images (B x 3 x 256 x 256)
                 with torch.no_grad():
-                    detected_faces, _, _ = face_detector.detect_from_batch(face_detector_trans(path_images_tensor))
+                    detected_faces, _, _ = face_detector.detect_from_batch(
+                        face_detector_trans(path_images_tensor)
+                    )
                 ########################################################################################################
 
                 ########################################################################################################
@@ -352,18 +444,24 @@ def main():
                 # -- Smiling    : Ratio of exposed teeth and open mouth.                                              ##
                 # -- Age        : below 15, 15-30, 30-40, 40-50, 50-60, and above 60.                                 ##
                 ########################################################################################################
-                if gan_type == 'StyleGAN2':
+                if gan_type == "StyleGAN2":
                     # According to [7], transform image to range [-1, 1] before mean-std normalization
                     with torch.no_grad():
                         attribute_predictions = celeba_5(
-                            celeba_5_trans(path_images_tensor.div(255.0).mul(2.0).add(-1.0)))
+                            celeba_5_trans(
+                                path_images_tensor.div(255.0).mul(2.0).add(-1.0)
+                            )
+                        )
                 else:
                     # According to [7], transform image to range [0, 1] before mean-std normalization
                     path_images_tensor_ = path_images_tensor.clone()
-                    path_images_tensor_ = (path_images_tensor_ - path_images_tensor_.min()) / \
-                                            (path_images_tensor_.max() - path_images_tensor_.min())
+                    path_images_tensor_ = (
+                        path_images_tensor_ - path_images_tensor_.min()
+                    ) / (path_images_tensor_.max() - path_images_tensor_.min())
                     with torch.no_grad():
-                        attribute_predictions = celeba_5(celeba_5_trans(path_images_tensor_))
+                        attribute_predictions = celeba_5(
+                            celeba_5_trans(path_images_tensor_)
+                        )
 
                 for attr, attr_predictions in attribute_predictions.items():
                     attr_scores = celeba_5_softmax(attr_predictions).cpu().numpy()
@@ -371,19 +469,19 @@ def main():
                     labels = np.argmax(attr_scores, axis=1)
                     final_scores = (labels + scores) / 6.0
 
-                    if attr == 'Bangs':
+                    if attr == "Bangs":
                         celeba_bangs_np[d] = final_scores
                         celeba_bangs_dict.update({d: final_scores.tolist()})
-                    elif attr == 'Eyeglasses':
+                    elif attr == "Eyeglasses":
                         celeba_eyeglasses_np[d] = final_scores
                         celeba_eyeglasses_dict.update({d: final_scores.tolist()})
-                    elif attr == 'No_Beard':
+                    elif attr == "No_Beard":
                         celeba_beard_np[d] = final_scores
                         celeba_beard_dict.update({d: final_scores.tolist()})
-                    elif attr == 'Smiling':
+                    elif attr == "Smiling":
                         celeba_smiling_np[d] = final_scores
                         celeba_smiling_dict.update({d: final_scores.tolist()})
-                    elif attr == 'Young':
+                    elif attr == "Young":
                         celeba_age_np[d] = final_scores
                         celeba_age_dict.update({d: final_scores.tolist()})
                 ########################################################################################################
@@ -396,20 +494,34 @@ def main():
                 # TODO: Use face detection to crop faces (instead of the heuristic followed in `arcface.py`, i.e.,
                 #       x = x[:, :, 35:223, 32:220])
                 path_images_tensor_resized = face_detector_trans(path_images_tensor)
-                original_img = path_images_tensor_resized[num_of_img_per_path // 2, :].unsqueeze(0)
-                id_scores = [id_comp(original_img.div(255.0).mul(2.0).add(-1.0),
-                                     original_img.div(255.0).mul(2.0).add(-1.0)).item()]
+                original_img = path_images_tensor_resized[
+                    num_of_img_per_path // 2, :
+                ].unsqueeze(0)
+                id_scores = [
+                    id_comp(
+                        original_img.div(255.0).mul(2.0).add(-1.0),
+                        original_img.div(255.0).mul(2.0).add(-1.0),
+                    ).item()
+                ]
                 for t in range((num_of_img_per_path - 1) // 2):
-                    transformed_img = path_images_tensor_resized[num_of_img_per_path // 2 + t + 1, :].unsqueeze(0)
+                    transformed_img = path_images_tensor_resized[
+                        num_of_img_per_path // 2 + t + 1, :
+                    ].unsqueeze(0)
                     with torch.no_grad():
-                        id_sim = id_comp(original_img.div(255.0).mul(2.0).add(-1.0),
-                                         transformed_img.div(255.0).mul(2.0).add(-1.0))
+                        id_sim = id_comp(
+                            original_img.div(255.0).mul(2.0).add(-1.0),
+                            transformed_img.div(255.0).mul(2.0).add(-1.0),
+                        )
                         id_scores.append(id_sim.item())
                 for t in range((num_of_img_per_path - 1) // 2):
-                    transformed_img = path_images_tensor_resized[num_of_img_per_path // 2 - t - 1, :].unsqueeze(0)
+                    transformed_img = path_images_tensor_resized[
+                        num_of_img_per_path // 2 - t - 1, :
+                    ].unsqueeze(0)
                     with torch.no_grad():
-                        id_sim = id_comp(original_img.div(255.0).mul(2.0).add(-1.0),
-                                         transformed_img.div(255.0).mul(2.0).add(-1.0))
+                        id_sim = id_comp(
+                            original_img.div(255.0).mul(2.0).add(-1.0),
+                            transformed_img.div(255.0).mul(2.0).add(-1.0),
+                        )
                         id_scores = [id_sim.item()] + id_scores
                 # Update `id_dict` with the id scores of the current path
                 id_dict.update({d: id_scores})
@@ -423,12 +535,16 @@ def main():
                 ########################################################################################################
                 cropped_faces = torch.zeros(len(detected_faces), 3, 224, 224)
                 for t in range(len(detected_faces)):
-                    cropped_faces[t] = face_trans_hope_fair(crop_face(images=face_detector_trans(path_images_tensor),
-                                                                      idx=t,
-                                                                      bbox=detected_faces[t][0][:-1]
-                                                                      if len(detected_faces[t]) > 0
-                                                                      else [0, 0, 256, 256],
-                                                                      padding=0.25).div(255.0))
+                    cropped_faces[t] = face_trans_hope_fair(
+                        crop_face(
+                            images=face_detector_trans(path_images_tensor),
+                            idx=t,
+                            bbox=detected_faces[t][0][:-1]
+                            if len(detected_faces[t]) > 0
+                            else [0, 0, 256, 256],
+                            padding=0.25,
+                        ).div(255.0)
+                    )
                 if use_cuda:
                     cropped_faces = cropped_faces.cuda()
 
@@ -437,14 +553,18 @@ def main():
 
                 # Gender predictions
                 gender_outputs = outputs[:, 7:9]
-                gender_scores = np.exp(gender_outputs) / np.sum(np.exp(gender_outputs), axis=1, keepdims=True)
+                gender_scores = np.exp(gender_outputs) / np.sum(
+                    np.exp(gender_outputs), axis=1, keepdims=True
+                )
                 femaleness_scores = gender_scores[:, 1].tolist()
                 gender_dict.update({d: femaleness_scores})
                 gender_np[d] = np.array(femaleness_scores)
 
                 # Age predictions
                 age_outputs = outputs[:, 9:18]
-                age_scores = np.exp(age_outputs) / np.sum(np.exp(age_outputs), axis=1, keepdims=True)
+                age_scores = np.exp(age_outputs) / np.sum(
+                    np.exp(age_outputs), axis=1, keepdims=True
+                )
                 age_predictions = np.argmax(age_scores, axis=1)
                 # Assign continuous scores
                 age_predictions = (age_predictions + np.max(age_scores, axis=1)) / 9.0
@@ -460,10 +580,14 @@ def main():
                 # 5: 'Middle Eastern'
                 # 6: 'Black'
                 race_outputs = outputs[:, :7]
-                race_scores = np.exp(race_outputs) / np.sum(np.exp(race_outputs), axis=1, keepdims=True)
+                race_scores = np.exp(race_outputs) / np.sum(
+                    np.exp(race_outputs), axis=1, keepdims=True
+                )
                 race_predictions = np.argmax(race_scores, axis=1)
                 # Assign continuous scores
-                race_predictions = (race_predictions + np.max(race_scores, axis=1)) / 7.0
+                race_predictions = (
+                    race_predictions + np.max(race_scores, axis=1)
+                ) / 7.0
                 race_dict.update({d: race_predictions.tolist()})
                 race_np[d] = race_predictions
                 ########################################################################################################
@@ -475,11 +599,15 @@ def main():
                 ########################################################################################################
                 cropped_faces = torch.zeros(len(detected_faces), 3, 224, 224)
                 for t in range(len(detected_faces)):
-                    cropped_faces[t] = face_trans_hope_fair(crop_face(images=face_detector_trans(path_images_tensor),
-                                                                      idx=t,
-                                                                      bbox=detected_faces[t][0][:-1]
-                                                                      if len(detected_faces[t]) > 0
-                                                                      else [0, 0, 256, 256]).div(255.0))
+                    cropped_faces[t] = face_trans_hope_fair(
+                        crop_face(
+                            images=face_detector_trans(path_images_tensor),
+                            idx=t,
+                            bbox=detected_faces[t][0][:-1]
+                            if len(detected_faces[t]) > 0
+                            else [0, 0, 256, 256],
+                        ).div(255.0)
+                    )
                 if use_cuda:
                     cropped_faces = cropped_faces.cuda()
 
@@ -512,16 +640,26 @@ def main():
                 ########################################################################################################
                 cropped_faces = torch.zeros(len(detected_faces), 3, 256, 256)
                 for t in range(len(detected_faces)):
-                    cropped_faces[t] = face_trans_au(crop_face(images=face_detector_trans(path_images_tensor),
-                                                               idx=t,
-                                                               bbox=detected_faces[t][0][:-1]
-                                                               if len(detected_faces[t]) > 0
-                                                               else [0, 0, 256, 256]))
+                    cropped_faces[t] = face_trans_au(
+                        crop_face(
+                            images=face_detector_trans(path_images_tensor),
+                            idx=t,
+                            bbox=detected_faces[t][0][:-1]
+                            if len(detected_faces[t]) > 0
+                            else [0, 0, 256, 256],
+                        )
+                    )
                 if use_cuda:
                     cropped_faces = cropped_faces.cuda()
 
                 # Predict AUs
-                au_intensities = AU_detector.detect_AU(cropped_faces).detach().cpu().numpy().transpose()
+                au_intensities = (
+                    AU_detector.detect_AU(cropped_faces)
+                    .detach()
+                    .cpu()
+                    .numpy()
+                    .transpose()
+                )
 
                 # Save in numpy array and update json dict
                 aus_list = []
@@ -537,78 +675,82 @@ def main():
                     torch.cuda.empty_cache()
 
             # --- Create directory for storing evaluation results in json format
-            json_files_dir = osp.join(h_dir, 'eval_json')
+            json_files_dir = osp.join(h_dir, "eval_json")
             os.makedirs(json_files_dir, exist_ok=True)
 
             # --- Create directory for storing evaluation results in numpy arrays
-            np_files_dir = osp.join(h_dir, 'eval_np')
+            np_files_dir = osp.join(h_dir, "eval_np")
             os.makedirs(np_files_dir, exist_ok=True)
 
             # --- Save json and np files
             # Save `face_bbox_dict` in json format, `face_width_np` and `face_height_np` in numpy array format
-            with open(osp.join(json_files_dir, 'face_bbox.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "face_bbox.json"), "w") as out:
                 json.dump(face_bbox_dict, out)
-            np.save(osp.join(np_files_dir, 'face_width.npy'), face_width_np)
-            np.save(osp.join(np_files_dir, 'face_height.npy'), face_height_np)
+            np.save(osp.join(np_files_dir, "face_width.npy"), face_width_np)
+            np.save(osp.join(np_files_dir, "face_height.npy"), face_height_np)
 
             # Save `id_dict` in json format and `id_np` in numpy array format
-            with open(osp.join(json_files_dir, 'identity.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "identity.json"), "w") as out:
                 json.dump(id_dict, out)
-            np.save(osp.join(np_files_dir, 'identity.npy'), id_np)
+            np.save(osp.join(np_files_dir, "identity.npy"), id_np)
 
             # Save `age_dict` in json format and `age_np` in numpy array format
-            with open(osp.join(json_files_dir, 'age.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "age.json"), "w") as out:
                 json.dump(age_dict, out)
-            np.save(osp.join(np_files_dir, 'age.npy'), age_np)
+            np.save(osp.join(np_files_dir, "age.npy"), age_np)
 
             # Save `race_dict` in json format and `race_np` in numpy array format
-            with open(osp.join(json_files_dir, 'race.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "race.json"), "w") as out:
                 json.dump(race_dict, out)
-            np.save(osp.join(np_files_dir, 'race.npy'), race_np)
+            np.save(osp.join(np_files_dir, "race.npy"), race_np)
 
             # Save `gender_dict` in json format and `gender_np` in numpy array format
-            with open(osp.join(json_files_dir, 'gender.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "gender.json"), "w") as out:
                 json.dump(gender_dict, out)
-            np.save(osp.join(np_files_dir, 'gender.npy'), gender_np)
+            np.save(osp.join(np_files_dir, "gender.npy"), gender_np)
 
             # Save `pose_dict` in json format and `yaw_np`, `pitch_np`, and `roll_np` in numpy array format
-            with open(osp.join(json_files_dir, 'pose.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "pose.json"), "w") as out:
                 json.dump(pose_dict, out)
-            np.save(osp.join(np_files_dir, 'yaw.npy'), yaw_np)
-            np.save(osp.join(np_files_dir, 'pitch.npy'), pitch_np)
-            np.save(osp.join(np_files_dir, 'roll.npy'), roll_np)
+            np.save(osp.join(np_files_dir, "yaw.npy"), yaw_np)
+            np.save(osp.join(np_files_dir, "pitch.npy"), pitch_np)
+            np.save(osp.join(np_files_dir, "roll.npy"), roll_np)
 
             # Save `aus_dict` in json format and `aus_np` in numpy array format
-            with open(osp.join(json_files_dir, 'au.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "au.json"), "w") as out:
                 json.dump(aus_dict, out)
             for t, k in enumerate(AUs.keys()):
-                np.save(osp.join(np_files_dir, '{}_{}.npy'.format(k, AUs[k])), aus_np[t, :])
+                np.save(
+                    osp.join(np_files_dir, "{}_{}.npy".format(k, AUs[k])), aus_np[t, :]
+                )
 
             # Save CelebA attributes ("Bangs", "Eyeglasses", "Beard", "Smiling", "Age") in json and numpy array format
-            with open(osp.join(json_files_dir, 'celeba_bangs.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "celeba_bangs.json"), "w") as out:
                 json.dump(celeba_bangs_dict, out)
-            np.save(osp.join(np_files_dir, 'celeba_bangs.npy'), celeba_bangs_np)
+            np.save(osp.join(np_files_dir, "celeba_bangs.npy"), celeba_bangs_np)
 
-            with open(osp.join(json_files_dir, 'celeba_eyeglasses.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "celeba_eyeglasses.json"), "w") as out:
                 json.dump(celeba_eyeglasses_dict, out)
-            np.save(osp.join(np_files_dir, 'celeba_eyeglasses.npy'), celeba_eyeglasses_np)
+            np.save(
+                osp.join(np_files_dir, "celeba_eyeglasses.npy"), celeba_eyeglasses_np
+            )
 
-            with open(osp.join(json_files_dir, 'celeba_beard.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "celeba_beard.json"), "w") as out:
                 json.dump(celeba_beard_dict, out)
-            np.save(osp.join(np_files_dir, 'celeba_beard.npy'), celeba_beard_np)
+            np.save(osp.join(np_files_dir, "celeba_beard.npy"), celeba_beard_np)
 
-            with open(osp.join(json_files_dir, 'celeba_smiling.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "celeba_smiling.json"), "w") as out:
                 json.dump(celeba_smiling_dict, out)
-            np.save(osp.join(np_files_dir, 'celeba_smiling.npy'), celeba_smiling_np)
+            np.save(osp.join(np_files_dir, "celeba_smiling.npy"), celeba_smiling_np)
 
-            with open(osp.join(json_files_dir, 'celeba_age.json'), 'w') as out:
+            with open(osp.join(json_files_dir, "celeba_age.json"), "w") as out:
                 json.dump(celeba_age_dict, out)
-            np.save(osp.join(np_files_dir, 'celeba_age.npy'), celeba_age_np)
+            np.save(osp.join(np_files_dir, "celeba_age.npy"), celeba_age_np)
 
     if args.verbose:
         update_stdout(1)
         print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

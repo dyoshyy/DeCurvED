@@ -15,8 +15,16 @@ class DeformatorType(Enum):
 
 
 class LatentDeformator(nn.Module):
-    def __init__(self, shift_dim, input_dim=None, out_dim=None, inner_dim=1024,
-                 type=DeformatorType.FC, random_init=False, bias=True):
+    def __init__(
+        self,
+        shift_dim,
+        input_dim=None,
+        out_dim=None,
+        inner_dim=1024,
+        type=DeformatorType.FC,
+        random_init=False,
+        bias=True,
+    ):
         super(LatentDeformator, self).__init__()
         self.type = type
         self.shift_dim = shift_dim
@@ -45,12 +53,17 @@ class LatentDeformator(nn.Module):
             min_dim = int(min(self.input_dim, self.out_dim))
             self.linear.weight.data[:min_dim, :min_dim] = torch.eye(min_dim)
             if random_init:
-                self.linear.weight.data = 0.1 * torch.randn_like(self.linear.weight.data)
+                self.linear.weight.data = 0.1 * torch.randn_like(
+                    self.linear.weight.data
+                )
 
         elif self.type == DeformatorType.ORTHO:
-            assert self.input_dim == self.out_dim, 'In/out dims must be equal for ortho'
-            self.log_mat_half = nn.Parameter((1.0 if random_init else 0.001) * torch.randn(
-                [self.input_dim, self.input_dim], device='cuda'), True)
+            assert self.input_dim == self.out_dim, "In/out dims must be equal for ortho"
+            self.log_mat_half = nn.Parameter(
+                (1.0 if random_init else 0.001)
+                * torch.randn([self.input_dim, self.input_dim], device="cuda"),
+                True,
+            )
 
         elif self.type == DeformatorType.RANDOM:
             self.linear = torch.empty([self.out_dim, self.input_dim])
@@ -73,13 +86,15 @@ class LatentDeformator(nn.Module):
 
             out = self.fc4(x) + input
         elif self.type == DeformatorType.LINEAR:
-            out  = self.linear(input)
+            out = self.linear(input)
         elif self.type == DeformatorType.PROJECTIVE:
             input_norm = torch.norm(input, dim=1, keepdim=True)
             out = self.linear(input)
             out = (input_norm / torch.norm(out, dim=1, keepdim=True)) * out
         elif self.type == DeformatorType.ORTHO:
-            mat = torch_expm((self.log_mat_half - self.log_mat_half.transpose(0, 1)).unsqueeze(0))
+            mat = torch_expm(
+                (self.log_mat_half - self.log_mat_half.transpose(0, 1)).unsqueeze(0)
+            )
             out = F.linear(input, mat)
         elif self.type == DeformatorType.RANDOM:
             self.linear = self.linear.to(input.device)
@@ -87,7 +102,9 @@ class LatentDeformator(nn.Module):
 
         flat_shift_dim = np.product(self.shift_dim)
         if out.shape[1] < flat_shift_dim:
-            padding = torch.zeros([out.shape[0], flat_shift_dim - out.shape[1]], device=out.device)
+            padding = torch.zeros(
+                [out.shape[0], flat_shift_dim - out.shape[1]], device=out.device
+            )
             out = torch.cat([out, padding], dim=1)
         elif out.shape[1] > flat_shift_dim:
             out = out[:, :flat_shift_dim]
@@ -110,6 +127,7 @@ def normal_projection_stat(x):
     std, mean = torch.std_mean(projection)
     return std, mean
 
+
 def torch_expm(A):
     n_A = A.shape[0]
     A_fro = torch.sqrt(A.abs().pow(2).sum(dim=(1, 2), keepdim=True))
@@ -118,7 +136,7 @@ def torch_expm(A):
     maxnorm = torch.tensor([5.371920351148152], dtype=A.dtype, device=A.device)
     zero = torch.tensor([0.0], dtype=A.dtype, device=A.device)
     n_squarings = torch.max(zero, torch.ceil(torch_log2(A_fro / maxnorm)))
-    A_scaled = A / 2.0 ** n_squarings
+    A_scaled = A / 2.0**n_squarings
     n_squarings = n_squarings.flatten().type(torch.int64)
 
     # Pade 13 approximation
@@ -141,20 +159,46 @@ def torch_log2(x):
 
 
 def torch_pade13(A):
-    b = torch.tensor([64764752532480000., 32382376266240000., 7771770303897600.,
-                      1187353796428800., 129060195264000., 10559470521600.,
-                      670442572800., 33522128640., 1323241920., 40840800.,
-                      960960., 16380., 182., 1.], dtype=A.dtype, device=A.device)
+    b = torch.tensor(
+        [
+            64764752532480000.0,
+            32382376266240000.0,
+            7771770303897600.0,
+            1187353796428800.0,
+            129060195264000.0,
+            10559470521600.0,
+            670442572800.0,
+            33522128640.0,
+            1323241920.0,
+            40840800.0,
+            960960.0,
+            16380.0,
+            182.0,
+            1.0,
+        ],
+        dtype=A.dtype,
+        device=A.device,
+    )
 
     ident = torch.eye(A.shape[1], dtype=A.dtype).to(A.device)
     A2 = torch.matmul(A, A)
     A4 = torch.matmul(A2, A2)
     A6 = torch.matmul(A4, A2)
-    U = torch.matmul(A,
-                     torch.matmul(A6, b[13] * A6 + b[11] * A4 + b[9] * A2) + b[7] * A6 + b[5] * A4 +
-                     b[3] * A2 + b[1] * ident)
-    V = torch.matmul(A6, b[12] * A6 + b[10] * A4 + b[8] * A2) + b[6] * A6 + b[4] * A4 + b[2] * A2 +\
-        b[0] * ident
+    U = torch.matmul(
+        A,
+        torch.matmul(A6, b[13] * A6 + b[11] * A4 + b[9] * A2)
+        + b[7] * A6
+        + b[5] * A4
+        + b[3] * A2
+        + b[1] * ident,
+    )
+    V = (
+        torch.matmul(A6, b[12] * A6 + b[10] * A4 + b[8] * A2)
+        + b[6] * A6
+        + b[4] * A4
+        + b[2] * A2
+        + b[0] * ident
+    )
     return U, V
 
 

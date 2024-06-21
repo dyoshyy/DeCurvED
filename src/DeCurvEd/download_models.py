@@ -6,10 +6,20 @@ import hashlib
 import tarfile
 import time
 import urllib.request
-from lib import GAN_WEIGHTS, SFD, ARCFACE, FAIRFACE, HOPENET, AUDET, CELEBA_ATTRIBUTES, \
-    SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25, SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35, \
-    BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25, ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2, \
-    StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2
+from lib import (
+    GAN_WEIGHTS,
+    SFD,
+    ARCFACE,
+    FAIRFACE,
+    HOPENET,
+    AUDET,
+    CELEBA_ATTRIBUTES,
+    SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25,
+    SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35,
+    BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25,
+    ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2,
+    StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2,
+)
 
 
 def reporthook(count, block_size, total_size):
@@ -21,8 +31,10 @@ def reporthook(count, block_size, total_size):
     progress_size = int(count * block_size)
     speed = int(progress_size / (1024 * duration))
     percent = min(int(count * block_size * 100 / total_size), 100)
-    sys.stdout.write("\r      \\__%d%%, %d MB, %d KB/s, %d seconds passed" %
-                     (percent, progress_size / (1024 * 1024), speed, duration))
+    sys.stdout.write(
+        "\r      \\__%d%%, %d MB, %d KB/s, %d seconds passed"
+        % (percent, progress_size / (1024 * 1024), speed, duration)
+    )
 
     sys.stdout.flush()
 
@@ -44,9 +56,11 @@ def download(src, sha256sum, dest):
         print()
         print("      \\__Check sha256: {}".format("OK!" if sha256_check else "Error"))
         if not sha256_check:
-            raise Exception("Error: Invalid sha256 sum: {}".format(sha256_hash.hexdigest()))
+            raise Exception(
+                "Error: Invalid sha256 sum: {}".format(sha256_hash.hexdigest())
+            )
 
-    tar_file = tarfile.open(tmp_tar, mode='r')
+    tar_file = tarfile.open(tmp_tar, mode="r")
     tar_file.extractall(dest)
     os.remove(tmp_tar)
 
@@ -109,24 +123,34 @@ def main():
          conference on computer vision. 2015.
 
     """
-    parser = argparse.ArgumentParser("Download pre-trained attribute detectors and (optionally) WarpedGANSpace models")
-    parser.add_argument('-m', '--models', action='store_true',
-                        help="download pre-trained WarpedGANSpace models under experiments/complete/")
+    parser = argparse.ArgumentParser(
+        "Download pre-trained attribute detectors and (optionally) WarpedGANSpace models"
+    )
+    parser.add_argument(
+        "-m",
+        "--models",
+        action="store_true",
+        help="download pre-trained WarpedGANSpace models under experiments/complete/",
+    )
     # Parse given arguments
     args = parser.parse_args()
 
     # Create pre-trained models root directory
-    pretrained_attributes_root = osp.join('models', 'pretrained')
+    pretrained_attributes_root = osp.join("models", "pretrained")
     os.makedirs(pretrained_attributes_root, exist_ok=True)
 
     # Download pre-trained GAN generators
     print("#. Download pre-trained GAN generators models:")
-    for m in ('SNGAN_MNIST', 'SNGAN_AnimeFaces', 'BigGAN', 'ProgGAN', 'StyleGAN2'):
+    for m in ("SNGAN_MNIST", "SNGAN_AnimeFaces", "BigGAN", "ProgGAN", "StyleGAN2"):
         print("  \\__.{} ".format(m))
-        model_dir = osp.join(pretrained_attributes_root, 'generators', m)
+        model_dir = osp.join(pretrained_attributes_root, "generators", m)
         print("      \\__Create dir: {}".format(model_dir))
         os.makedirs(model_dir, exist_ok=True)
-        download(src=GAN_WEIGHTS[m]['url'], sha256sum=GAN_WEIGHTS[m]['sha256sum'], dest=model_dir)
+        download(
+            src=GAN_WEIGHTS[m]["url"],
+            sha256sum=GAN_WEIGHTS[m]["sha256sum"],
+            dest=model_dir,
+        )
 
     print("#. Download pre-trained SFD face detector model...")
     print("  \\__.Face detector (SFD)")
@@ -150,41 +174,55 @@ def main():
 
     print("#. Download pre-trained CelebA attributes predictors models...")
     print("  \\__.CelebA")
-    download(src=CELEBA_ATTRIBUTES[0], sha256sum=CELEBA_ATTRIBUTES[1], dest=pretrained_attributes_root)
+    download(
+        src=CELEBA_ATTRIBUTES[0],
+        sha256sum=CELEBA_ATTRIBUTES[1],
+        dest=pretrained_attributes_root,
+    )
 
     # Download pre-trained WarpedGANSpace models
     if args.models:
         # Create WarpedGANSpace pre-trained models root directory
-        pretrained_warpedganspace_root = osp.join('experiments', 'complete')
+        pretrained_warpedganspace_root = osp.join("experiments", "complete")
         os.makedirs(pretrained_warpedganspace_root, exist_ok=True)
 
         print("#. Download pre-trained WarpedGANSpace models...")
 
         print("  \\__.SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0.15_0.25")
-        download(src=SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25[0],
-                 sha256sum=SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25[1],
-                 dest=pretrained_warpedganspace_root)
+        download(
+            src=SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25[0],
+            sha256sum=SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25[1],
+            dest=pretrained_warpedganspace_root,
+        )
 
         print("  \\__.SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0.25_0.35")
-        download(src=SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35[0],
-                 sha256sum=SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35[1],
-                 dest=pretrained_warpedganspace_root)
+        download(
+            src=SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35[0],
+            sha256sum=SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35[1],
+            dest=pretrained_warpedganspace_root,
+        )
 
         print("  \\__.BigGAN_239_ResNet_K120_D256_LearnGammas_eps0.15_0.25")
-        download(src=BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25[0],
-                 sha256sum=BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25[1],
-                 dest=pretrained_warpedganspace_root)
+        download(
+            src=BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25[0],
+            sha256sum=BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25[1],
+            dest=pretrained_warpedganspace_root,
+        )
 
         print("  \\__.ProgGAN_ResNet_K200_D512_LearnGammas_eps0.1_0.2")
-        download(src=ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2[0],
-                 sha256sum=ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2[1],
-                 dest=pretrained_warpedganspace_root)
+        download(
+            src=ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2[0],
+            sha256sum=ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2[1],
+            dest=pretrained_warpedganspace_root,
+        )
 
         print("  \\__.StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2")
-        download(src=StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2[0],
-                 sha256sum=StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2[1],
-                 dest=pretrained_warpedganspace_root)
+        download(
+            src=StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2[0],
+            sha256sum=StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2[1],
+            dest=pretrained_warpedganspace_root,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

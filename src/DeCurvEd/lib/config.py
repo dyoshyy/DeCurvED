@@ -9,7 +9,7 @@
 ##                                                 [ Reconstructor ]                                                  ##
 ##                                                                                                                    ##
 ########################################################################################################################
-RECONSTRUCTOR_TYPES = ('ResNet', 'LeNet')
+RECONSTRUCTOR_TYPES = ("ResNet", "LeNet")
 
 
 ########################################################################################################################
@@ -18,49 +18,56 @@ RECONSTRUCTOR_TYPES = ('ResNet', 'LeNet')
 ##                                                                                                                    ##
 ########################################################################################################################
 GAN_RESOLUTIONS = {
-    'SNGAN_MNIST': 32,
-    'SNGAN_AnimeFaces': 64,
-    'BigGAN': 128,
-    'ProgGAN': 1024,
-    'StyleGAN2': 1024
+    "SNGAN_MNIST": 32,
+    "SNGAN_AnimeFaces": 64,
+    "BigGAN": 128,
+    "ProgGAN": 1024,
+    "StyleGAN2": 1024,
 }
 
 GAN_WEIGHTS = {
-    'SNGAN_MNIST': {
-        'url': 'https://www.dropbox.com/s/jh9xylezn45tmml/pretrained_sngan_mnist_generator.tar?dl=1',
-        'sha256sum': 'd0279ad755adfc9dd2c5ff04479d31bbd8c2fd508b5e75ce4f7c267249c2cdc9',
-        'weights': {
-            GAN_RESOLUTIONS['SNGAN_MNIST']: 'models/pretrained/generators/SNGAN_MNIST/generator.pt'
-        }
+    "SNGAN_MNIST": {
+        "url": "https://www.dropbox.com/s/jh9xylezn45tmml/pretrained_sngan_mnist_generator.tar?dl=1",
+        "sha256sum": "d0279ad755adfc9dd2c5ff04479d31bbd8c2fd508b5e75ce4f7c267249c2cdc9",
+        "weights": {
+            GAN_RESOLUTIONS[
+                "SNGAN_MNIST"
+            ]: "models/pretrained/generators/SNGAN_MNIST/generator.pt"
+        },
     },
-    'SNGAN_AnimeFaces': {
-        'url': 'https://www.dropbox.com/s/04l48564h70impg/pretrained_sngan_animefaces_generator.tar?dl=1',
-        'sha256sum': '00809a842ab9f6dfad5c9782a2bcd644d7e6d17adc54af04c671affab4a24ecd',
-        'weights': {
-            GAN_RESOLUTIONS['SNGAN_AnimeFaces']: 'models/pretrained/generators/SNGAN_AnimeFaces/generator.pt'}
+    "SNGAN_AnimeFaces": {
+        "url": "https://www.dropbox.com/s/04l48564h70impg/pretrained_sngan_animefaces_generator.tar?dl=1",
+        "sha256sum": "00809a842ab9f6dfad5c9782a2bcd644d7e6d17adc54af04c671affab4a24ecd",
+        "weights": {
+            GAN_RESOLUTIONS[
+                "SNGAN_AnimeFaces"
+            ]: "models/pretrained/generators/SNGAN_AnimeFaces/generator.pt"
+        },
     },
-    'BigGAN': {
-        'url': 'https://www.dropbox.com/s/z82rwv65lwry0ox/pretrained_biggan_generator.tar?dl=1',
-        'sha256sum': '748f4d85dff5e89a106a74b7f8c80a5a52cb735680356a00da025695c7b21198',
-        'weights': {
-            GAN_RESOLUTIONS['BigGAN']: 'models/pretrained/generators/BigGAN/G_ema.pth'
-        }
+    "BigGAN": {
+        "url": "https://www.dropbox.com/s/z82rwv65lwry0ox/pretrained_biggan_generator.tar?dl=1",
+        "sha256sum": "748f4d85dff5e89a106a74b7f8c80a5a52cb735680356a00da025695c7b21198",
+        "weights": {
+            GAN_RESOLUTIONS["BigGAN"]: "models/pretrained/generators/BigGAN/G_ema.pth"
+        },
     },
-    'ProgGAN': {
-        'url': 'https://www.dropbox.com/s/697ibqzlw8mboo9/pretrained_proggan_generator.tar?dl=1',
-        'sha256sum': '08a27b36fda82d840136e570637b2b3bf5dfcf92732d298b9684e07d071aa64b',
-        'weights': {
-            GAN_RESOLUTIONS['ProgGAN']: 'models/pretrained/generators/ProgGAN/100_celeb_hq_network-snapshot-010403.pth'
-        }
+    "ProgGAN": {
+        "url": "https://www.dropbox.com/s/697ibqzlw8mboo9/pretrained_proggan_generator.tar?dl=1",
+        "sha256sum": "08a27b36fda82d840136e570637b2b3bf5dfcf92732d298b9684e07d071aa64b",
+        "weights": {
+            GAN_RESOLUTIONS[
+                "ProgGAN"
+            ]: "models/pretrained/generators/ProgGAN/100_celeb_hq_network-snapshot-010403.pth"
+        },
     },
-    'StyleGAN2': {
-        'url': 'https://www.dropbox.com/s/rwhul1kjg2r2m88/pretrained_stylegan2_generators.tar?dl=1',
-        'sha256sum': '99f345cc67d88cc5292fed0f8b458192d57eccb0ec291145b5123de5015d0608',
-        'weights': {
-            256: 'models/pretrained/generators/StyleGAN2/stylegan2-ffhq-256-550000.pt',
-            1024: 'models/pretrained/generators/StyleGAN2/stylegan2-ffhq-config-f.pt'
-        }
-    }
+    "StyleGAN2": {
+        "url": "https://www.dropbox.com/s/rwhul1kjg2r2m88/pretrained_stylegan2_generators.tar?dl=1",
+        "sha256sum": "99f345cc67d88cc5292fed0f8b458192d57eccb0ec291145b5123de5015d0608",
+        "weights": {
+            256: "models/pretrained/generators/StyleGAN2/stylegan2-ffhq-256-550000.pt",
+            1024: "models/pretrained/generators/StyleGAN2/stylegan2-ffhq-config-f.pt",
+        },
+    },
 }
 
 ########################################################################################################################
@@ -69,28 +76,28 @@ GAN_WEIGHTS = {
 ##                                                                                                                    ##
 ########################################################################################################################
 SNGAN_MNIST_LeNet_K64_D128_LearnGammas_eps0d15_0d25 = (
-    'https://www.dropbox.com/s/sn16j9w6h35nyqv/SNGAN_MNIST-LeNet-K64-D128-LearnGammas-eps0.15_0.25.tar?dl=1',
-    '29212be9a23f4906ce0ef6d3735cd9bdd9f12825f63187a5d1dd6a153fc85a95'
+    "https://www.dropbox.com/s/sn16j9w6h35nyqv/SNGAN_MNIST-LeNet-K64-D128-LearnGammas-eps0.15_0.25.tar?dl=1",
+    "29212be9a23f4906ce0ef6d3735cd9bdd9f12825f63187a5d1dd6a153fc85a95",
 )
 
 SNGAN_AnimeFaces_LeNet_K64_D128_LearnGammas_eps0d25_0d35 = (
-    'https://www.dropbox.com/s/dlmqk8oes723sq8/SNGAN_AnimeFaces-LeNet-K64-D128-LearnGammas-eps0.25_0.35.tar?dl=1',
-    '211a219b66e77844d5babccdf2028daed647e15696d6bb0a7d9b833b110bc245'
+    "https://www.dropbox.com/s/dlmqk8oes723sq8/SNGAN_AnimeFaces-LeNet-K64-D128-LearnGammas-eps0.25_0.35.tar?dl=1",
+    "211a219b66e77844d5babccdf2028daed647e15696d6bb0a7d9b833b110bc245",
 )
 
 BigGAN_239_ResNet_K120_D256_LearnGammas_eps0d15_0d25 = (
-    'https://www.dropbox.com/s/8v72vmehw214u8c/BigGAN-239-ResNet-K120-D256-LearnGammas-eps0.1_0.2.tar?dl=1',
-    'df346b0edb83d11add784bcbb915a78695f6c29435ea1b6165eb70166f5b3995'
+    "https://www.dropbox.com/s/8v72vmehw214u8c/BigGAN-239-ResNet-K120-D256-LearnGammas-eps0.1_0.2.tar?dl=1",
+    "df346b0edb83d11add784bcbb915a78695f6c29435ea1b6165eb70166f5b3995",
 )
 
 ProgGAN_ResNet_K200_D512_LearnGammas_eps0d1_0d2 = (
-    'https://www.dropbox.com/s/kw9ozsgo5emx2ef/ProgGAN-ResNet-K200-D512-LearnGammas-eps0.1_0.2.tar?dl=1',
-    '867daac2b516f1ab1282c85bd9a8a14db07cb9095495a2d1591c0efe9b20fcac'
+    "https://www.dropbox.com/s/kw9ozsgo5emx2ef/ProgGAN-ResNet-K200-D512-LearnGammas-eps0.1_0.2.tar?dl=1",
+    "867daac2b516f1ab1282c85bd9a8a14db07cb9095495a2d1591c0efe9b20fcac",
 )
 
 StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2 = (
-    'https://www.dropbox.com/s/w2bnb1jukcyx2fk/StyleGAN2-1024-W-ResNet-K200-D512-LearnGammas-eps0.1_0.2.tar?dl=1',
-    '2579db60d2f04065f05d3aa86216c0a6f7b04022f2623ba770311c3c3c4a88de'
+    "https://www.dropbox.com/s/w2bnb1jukcyx2fk/StyleGAN2-1024-W-ResNet-K200-D512-LearnGammas-eps0.1_0.2.tar?dl=1",
+    "2579db60d2f04065f05d3aa86216c0a6f7b04022f2623ba770311c3c3c4a88de",
 )
 
 ########################################################################################################################
@@ -98,48 +105,60 @@ StyleGAN2_1024_W_ResNet_K200_D512_LearnGammas_eps0d1_0d2 = (
 ##                                                     [ SFD ]                                                        ##
 ##                                                                                                                    ##
 ########################################################################################################################
-SFD = ('https://www.dropbox.com/s/zejv9acgk62lfbv/sfd.tar?dl=1',
-       '2bea5f1c10110e356eef3f4efd45169100b9c7704eb6e6abd309df58f34452d4')
+SFD = (
+    "https://www.dropbox.com/s/zejv9acgk62lfbv/sfd.tar?dl=1",
+    "2bea5f1c10110e356eef3f4efd45169100b9c7704eb6e6abd309df58f34452d4",
+)
 
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                                    [ ArcFace ]                                                     ##
 ##                                                                                                                    ##
 ########################################################################################################################
-ARCFACE = ('https://www.dropbox.com/s/vumuvgh84mhorx4/arcface.tar?dl=1',
-           'edd5854cacd86c17a78a11f70ab8c49bceffefb90ee070754288fa7ceadcdfb2')
+ARCFACE = (
+    "https://www.dropbox.com/s/vumuvgh84mhorx4/arcface.tar?dl=1",
+    "edd5854cacd86c17a78a11f70ab8c49bceffefb90ee070754288fa7ceadcdfb2",
+)
 
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                                   [ FairFace ]                                                     ##
 ##                                                                                                                    ##
 ########################################################################################################################
-FAIRFACE = ('https://www.dropbox.com/s/xnxd2wnfgzt3og1/fairface.tar?dl=1',
-            '0e78ff8b79612e52e226461fb67f6cff43cef0959d1ab2b520acdcc9105d065e')
+FAIRFACE = (
+    "https://www.dropbox.com/s/xnxd2wnfgzt3og1/fairface.tar?dl=1",
+    "0e78ff8b79612e52e226461fb67f6cff43cef0959d1ab2b520acdcc9105d065e",
+)
 
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                                    [ HopeNet ]                                                     ##
 ##                                                                                                                    ##
 ########################################################################################################################
-HOPENET = ('https://www.dropbox.com/s/bckhfk4u02sl8lz/hopenet.tar?dl=1',
-           '8c9d67dd8f82ce3332c43b5fc407dc57674d1f16fbe7f0743e9ad57ede73e33f')
+HOPENET = (
+    "https://www.dropbox.com/s/bckhfk4u02sl8lz/hopenet.tar?dl=1",
+    "8c9d67dd8f82ce3332c43b5fc407dc57674d1f16fbe7f0743e9ad57ede73e33f",
+)
 
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                                 [ AU Detector ]                                                    ##
 ##                                                                                                                    ##
 ########################################################################################################################
-AUDET = ('https://www.dropbox.com/s/qzeugjqi4ss2w5m/au_detector.tar?dl=1',
-         'dbdf18bf541de3c46769d712866bef38496b7528072850c28207747b2b2c101e')
+AUDET = (
+    "https://www.dropbox.com/s/qzeugjqi4ss2w5m/au_detector.tar?dl=1",
+    "dbdf18bf541de3c46769d712866bef38496b7528072850c28207747b2b2c101e",
+)
 
 ########################################################################################################################
 ##                                                                                                                    ##
 ##                                              [ CelebA Attributes ]                                                 ##
 ##                                                                                                                    ##
 ########################################################################################################################
-CELEBA_ATTRIBUTES = ('https://www.dropbox.com/s/ulyu428dw620vhi/celeba_attributes.tar?dl=1',
-                     '45276f2df865112c7488fe128d8c79527da252aad30fc541417b9961dfdd9bbc')
+CELEBA_ATTRIBUTES = (
+    "https://www.dropbox.com/s/ulyu428dw620vhi/celeba_attributes.tar?dl=1",
+    "45276f2df865112c7488fe128d8c79527da252aad30fc541417b9961dfdd9bbc",
+)
 
 
 ########################################################################################################################
@@ -1147,5 +1166,5 @@ BIGGAN_CLASSES = {
     996: "hen-of-the-woods, hen of the woods, Polyporus frondosus, Grifola frondosa",
     997: "bolete",
     998: "ear, spike, capitulum",
-    999: "toilet tissue, toilet paper, bathroom tissue"
+    999: "toilet tissue, toilet paper, bathroom tissue",
 }

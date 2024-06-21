@@ -6,12 +6,21 @@ import torch.utils.model_zoo as model_zoo
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=(3, 3), stride=(stride, stride), padding=1, bias=False)
+    return nn.Conv2d(
+        in_planes,
+        out_planes,
+        kernel_size=(3, 3),
+        stride=(stride, stride),
+        padding=1,
+        bias=False,
+    )
 
 
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=(1, 1), stride=(stride, stride), bias=False)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=(1, 1), stride=(stride, stride), bias=False
+    )
 
 
 class BasicBlock(nn.Module):
@@ -104,15 +113,14 @@ class fc_block(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self,
-                 block,
-                 layers,
-                 attr_file,
-                 zero_init_residual=False,
-                 dropout_rate=0):
+    def __init__(
+        self, block, layers, attr_file, zero_init_residual=False, dropout_rate=0
+    ):
         super(ResNet, self).__init__()
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=3, bias=False)
+        self.conv1 = nn.Conv2d(
+            3, 64, kernel_size=(7, 7), stride=(2, 2), padding=3, bias=False
+        )
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -125,17 +133,22 @@ class ResNet(nn.Module):
 
         # Construct classifier heads according to the number of values of each attribute
         self.attr_file = attr_file
-        with open(self.attr_file, 'r') as f:
+        with open(self.attr_file, "r") as f:
             attr_f = json.load(f)
-        self.attr_info = attr_f['attr_info']
+        self.attr_info = attr_f["attr_info"]
         for idx, (key, val) in enumerate(self.attr_info.items()):
             num_val = int(len(val["value"]))
-            setattr(self, 'classifier' + str(key).zfill(2) + val["name"],
-                    nn.Sequential(fc_block(512, 256, dropout_rate), nn.Linear(256, num_val)))
+            setattr(
+                self,
+                "classifier" + str(key).zfill(2) + val["name"],
+                nn.Sequential(
+                    fc_block(512, 256, dropout_rate), nn.Linear(256, num_val)
+                ),
+            )
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -153,8 +166,10 @@ class ResNet(nn.Module):
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(conv1x1(self.inplanes, planes * block.expansion, stride),
-                                       nn.BatchNorm2d(planes * block.expansion))
+            downsample = nn.Sequential(
+                conv1x1(self.inplanes, planes * block.expansion, stride),
+                nn.BatchNorm2d(planes * block.expansion),
+            )
 
         layers = [block(self.inplanes, planes, stride, downsample)]
         self.inplanes = planes * block.expansion
@@ -178,16 +193,20 @@ class ResNet(nn.Module):
 
         predictions = {}
         for idx, (key, val) in enumerate(self.attr_info.items()):
-            classifier = getattr(self, 'classifier' + str(key).zfill(2) + val["name"])
+            classifier = getattr(self, "classifier" + str(key).zfill(2) + val["name"])
             predictions.update({val["name"]: classifier(x)})
 
         return predictions
 
 
-def celeba_attr_predictor(attr_file, pretrained='models/pretrained/celeba_attributes/predictor_1024.pth.tar'):
+def celeba_attr_predictor(
+    attr_file, pretrained="models/pretrained/celeba_attributes/predictor_1024.pth.tar"
+):
     model = ResNet(Bottleneck, [3, 4, 6, 3], attr_file=attr_file)
-    init_pretrained_weights(model, 'https://download.pytorch.org/models/resnet50-19c8e357.pth')
-    model.load_state_dict(torch.load(pretrained)['state_dict'], strict=True)
+    init_pretrained_weights(
+        model, "https://download.pytorch.org/models/resnet50-19c8e357.pth"
+    )
+    model.load_state_dict(torch.load(pretrained)["state_dict"], strict=True)
     return model
 
 

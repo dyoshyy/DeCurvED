@@ -5,7 +5,6 @@ from .cnf import CNF, SequentialFlow
 
 def count_nfe(model):
     class AccNumEvals(object):
-
         def __init__(self):
             self.num_evals = 0
 
@@ -24,13 +23,14 @@ def count_parameters(model):
 
 def count_total_time(model):
     class Accumulator(object):
-
         def __init__(self):
             self.total_time = 0
 
         def __call__(self, module):
             if isinstance(module, CNF):
-                self.total_time = self.total_time + module.sqrt_end_time * module.sqrt_end_time
+                self.total_time = (
+                    self.total_time + module.sqrt_end_time * module.sqrt_end_time
+                )
 
     accumulator = Accumulator()
     model.apply(accumulator)
@@ -42,8 +42,8 @@ def build_model(input_dim, hidden_dims, num_blocks):
         diffeq = ODEnet(
             hidden_dims=hidden_dims,
             input_shape=(input_dim,),
-            layer_type='concatsquash',
-            nonlinearity='tanh',
+            layer_type="concatsquash",
+            nonlinearity="tanh",
         )
         odefunc = ODEfunc(
             diffeq=diffeq,
@@ -52,7 +52,7 @@ def build_model(input_dim, hidden_dims, num_blocks):
             odefunc=odefunc,
             T=0.1,
             train_T=False,
-            solver='dopri5',
+            solver="dopri5",
             use_adjoint=True,
             atol=1e-5,
             rtol=1e-5,
@@ -60,12 +60,13 @@ def build_model(input_dim, hidden_dims, num_blocks):
         return cnf
 
     chain = [build_cnf() for _ in range(num_blocks)]
-    bn_layers = [MovingBatchNorm1d(input_dim, bn_lag=0, sync=False)
-                     for _ in range(num_blocks)]
+    bn_layers = [
+        MovingBatchNorm1d(input_dim, bn_lag=0, sync=False) for _ in range(num_blocks)
+    ]
     bn_chain = [MovingBatchNorm1d(input_dim, bn_lag=0, sync=False)]
     for a, b in zip(chain, bn_layers):
-            bn_chain.append(a)
-            bn_chain.append(b)
+        bn_chain.append(a)
+        bn_chain.append(b)
     model = SequentialFlow(chain)
     print(model)
 

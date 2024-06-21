@@ -29,37 +29,64 @@ def tensor2image(tensor, img_size=None, adaptive=False):
     if adaptive:
         tensor = (tensor - tensor.min()) / (tensor.max() - tensor.min())
         if img_size:
-            return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8)).resize((img_size, img_size))
+            return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8)).resize(
+                (img_size, img_size)
+            )
         else:
             return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8))
     else:
         tensor = (tensor + 1) / 2
         tensor.clamp(0, 1)
         if img_size:
-            return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8)).resize((img_size, img_size))
+            return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8)).resize(
+                (img_size, img_size)
+            )
         else:
             return ToPILImage()((255 * tensor.cpu().detach()).to(torch.uint8))
 
 
-def build_gan(gan_type, target_classes, stylegan2_resolution, shift_in_w_space, use_cuda, multi_gpu):
+def build_gan(
+    gan_type,
+    target_classes,
+    stylegan2_resolution,
+    shift_in_w_space,
+    use_cuda,
+    multi_gpu,
+):
     # -- BigGAN
-    if gan_type == 'BigGAN':
-        G = build_biggan(pretrained_gan_weights=GAN_WEIGHTS[gan_type]['weights'][GAN_RESOLUTIONS[gan_type]],
-                         target_classes=target_classes)
+    if gan_type == "BigGAN":
+        G = build_biggan(
+            pretrained_gan_weights=GAN_WEIGHTS[gan_type]["weights"][
+                GAN_RESOLUTIONS[gan_type]
+            ],
+            target_classes=target_classes,
+        )
     # -- ProgGAN
-    elif gan_type == 'ProgGAN':
-        G = build_proggan(pretrained_gan_weights=GAN_WEIGHTS[gan_type]['weights'][GAN_RESOLUTIONS[gan_type]])
+    elif gan_type == "ProgGAN":
+        G = build_proggan(
+            pretrained_gan_weights=GAN_WEIGHTS[gan_type]["weights"][
+                GAN_RESOLUTIONS[gan_type]
+            ]
+        )
     # -- StyleGAN2
-    elif gan_type == 'StyleGAN2':
-        G = build_stylegan2(pretrained_gan_weights=GAN_WEIGHTS[gan_type]['weights'][stylegan2_resolution],
-                            resolution=stylegan2_resolution,
-                            shift_in_w_space=shift_in_w_space)
+    elif gan_type == "StyleGAN2":
+        G = build_stylegan2(
+            pretrained_gan_weights=GAN_WEIGHTS[gan_type]["weights"][
+                stylegan2_resolution
+            ],
+            resolution=stylegan2_resolution,
+            shift_in_w_space=shift_in_w_space,
+        )
     # -- Spectrally Normalised GAN (SNGAN)
     else:
-        G = build_sngan(pretrained_gan_weights=GAN_WEIGHTS[gan_type]['weights'][GAN_RESOLUTIONS[gan_type]],
-                        gan_type=gan_type)
+        G = build_sngan(
+            pretrained_gan_weights=GAN_WEIGHTS[gan_type]["weights"][
+                GAN_RESOLUTIONS[gan_type]
+            ],
+            gan_type=gan_type,
+        )
     for param in G.G.parameters():
-            param.requires_grad = False
+        param.requires_grad = False
 
     # Upload GAN generator model to GPU
     if use_cuda:
@@ -72,15 +99,17 @@ def build_gan(gan_type, target_classes, stylegan2_resolution, shift_in_w_space, 
     return G
 
 
-def get_concat_h(img_file_orig,
-                 shifted_img_file,
-                 size,
-                 img_id,
-                 s,
-                 shift_steps,
-                 path_id,
-                 draw_header=False,
-                 draw_progress_bar=True):
+def get_concat_h(
+    img_file_orig,
+    shifted_img_file,
+    size,
+    img_id,
+    s,
+    shift_steps,
+    path_id,
+    draw_header=False,
+    draw_progress_bar=True,
+):
     img_orig = Image.open(img_file_orig).resize((size, size))
     img_orig_w = img_orig.width
     img_orig_h = img_orig.height
@@ -88,7 +117,7 @@ def get_concat_h(img_file_orig,
     img_shifted = Image.open(shifted_img_file).resize((size, size))
     img_shifted_w = img_shifted.width
 
-    dst = Image.new('RGB', (img_orig_w + img_shifted_w, img_orig_h))
+    dst = Image.new("RGB", (img_orig_w + img_shifted_w, img_orig_h))
     dst.paste(img_orig, (0, 0))
     dst.paste(img_shifted, (img_orig_w, 0))
 
@@ -99,20 +128,42 @@ def get_concat_h(img_file_orig,
         offset_h = 6
         t_w = 270
         t_h = 13
-        draw.rectangle(xy=[(offset_w, offset_h), (offset_w + t_w, offset_h + t_h)], fill=(0, 0, 0))
-        draw.text((offset_w + 2, offset_h + 2), "{}/{:03d}".format(img_id, path_id), fill=(255, 255, 255))
+        draw.rectangle(
+            xy=[(offset_w, offset_h), (offset_w + t_w, offset_h + t_h)], fill=(0, 0, 0)
+        )
+        draw.text(
+            (offset_w + 2, offset_h + 2),
+            "{}/{:03d}".format(img_id, path_id),
+            fill=(255, 255, 255),
+        )
 
     # Draw progress bar
     if draw_progress_bar:
         draw = ImageDraw.Draw(dst)
         bar_h = 7
         bar_color = (252, 186, 3)
-        draw.rectangle(xy=[(size, size - bar_h), ((1 + s / shift_steps) * size, size)], fill=bar_color)
+        draw.rectangle(
+            xy=[(size, size - bar_h), ((1 + s / shift_steps) * size, size)],
+            fill=bar_color,
+        )
 
     return dst
 
 
-def manipulation(use_cuda, shift_steps, dim, G, S, args_json, args, w, z, current_path_latent_codes, current_path_latent_shifts, eps):
+def manipulation(
+    use_cuda,
+    shift_steps,
+    dim,
+    G,
+    S,
+    args_json,
+    args,
+    w,
+    z,
+    current_path_latent_codes,
+    current_path_latent_shifts,
+    eps,
+):
     cnt = 0
     for _ in range(shift_steps):
         cnt += 1
@@ -123,33 +174,38 @@ def manipulation(use_cuda, shift_steps, dim, G, S, args_json, args, w, z, curren
             support_sets_mask.cuda()
 
         # Update z.
-        if args_json.__dict__["flow"] == 'FFJORD':
+        if args_json.__dict__["flow"] == "FFJORD":
             with torch.no_grad():
-                z_new, _ = S(w if args_json.__dict__["shift_in_w_space"] else z,
-                            support_sets_mask,
-                            torch.tensor(eps),
-                            torch.zeros(support_sets_mask.shape[0], 1).to(z.device))
+                z_new, _ = S(
+                    w if args_json.__dict__["shift_in_w_space"] else z,
+                    support_sets_mask,
+                    torch.tensor(eps),
+                    torch.zeros(support_sets_mask.shape[0], 1).to(z.device),
+                )
             if args_json.__dict__["shift_in_w_space"]:
                 shift = z_new - w
                 w = z_new
             else:
                 shift = z_new - z
                 z = z_new
-        elif args_json.__dict__["flow"] == 'linear':
-            support_sets_mask = torch.zeros(1, args_json.__dict__['num_support_sets'])
+        elif args_json.__dict__["flow"] == "linear":
+            support_sets_mask = torch.zeros(1, args_json.__dict__["num_support_sets"])
             support_sets_mask[0, dim] = 1.0
             with torch.no_grad():
-                shift = S(eps*support_sets_mask)
+                shift = S(eps * support_sets_mask)
             if args_json.__dict__["shift_in_w_space"]:
                 w = w + shift
             else:
                 z = z + shift
         else:
-            support_sets_mask = torch.zeros(1, args_json.__dict__['num_support_sets'])
+            support_sets_mask = torch.zeros(1, args_json.__dict__["num_support_sets"])
             support_sets_mask[0, dim] = 1.0
             # Get latent space shift vector
             with torch.no_grad():
-                shift = eps * S(support_sets_mask, w if args_json.__dict__["shift_in_w_space"] else z)
+                shift = eps * S(
+                    support_sets_mask,
+                    w if args_json.__dict__["shift_in_w_space"] else z,
+                )
             # Update z/w
             if args_json.__dict__["shift_in_w_space"]:
                 w = w + shift
@@ -160,32 +216,50 @@ def manipulation(use_cuda, shift_steps, dim, G, S, args_json, args, w, z, curren
         if cnt == args.shift_leap:
             if eps > 0:
                 current_path_latent_shifts.append(shift)
-                current_path_latent_codes.append(w if args_json.__dict__["shift_in_w_space"] else z)
+                current_path_latent_codes.append(
+                    w if args_json.__dict__["shift_in_w_space"] else z
+                )
                 cnt = 0
             else:
                 current_path_latent_shifts = [shift] + current_path_latent_shifts
-                current_path_latent_codes = [w if args_json.__dict__["shift_in_w_space"] else z] \
-                    + current_path_latent_codes
+                current_path_latent_codes = [
+                    w if args_json.__dict__["shift_in_w_space"] else z
+                ] + current_path_latent_codes
                 cnt = 0
     return w, z, current_path_latent_codes, current_path_latent_shifts
 
-def manipulation_linear(use_cuda, shift_steps, dim, G, S, args_json, w, z, current_path_latent_codes, current_path_latent_shifts, eps, signs):
+
+def manipulation_linear(
+    use_cuda,
+    shift_steps,
+    dim,
+    G,
+    S,
+    args_json,
+    w,
+    z,
+    current_path_latent_codes,
+    current_path_latent_shifts,
+    eps,
+    signs,
+):
     if args_json.__dict__["shift_in_w_space"]:
-        w = w.repeat(shift_steps+1, 1)
+        w = w.repeat(shift_steps + 1, 1)
     else:
-        z = z.repeat(shift_steps+1, 1)
+        z = z.repeat(shift_steps + 1, 1)
     # Calculate shift vector based on current z
     support_sets_mask = torch.zeros(shift_steps, G.dim_z)
     for i in range(shift_steps):
-        support_sets_mask[i, dim] = eps if signs == '+' else -eps
+        support_sets_mask[i, dim] = eps if signs == "+" else -eps
     if use_cuda:
         support_sets_mask.cuda()
 
     # Update z.
-    if args_json.__dict__["flow"] == 'FFJORD':
+    if args_json.__dict__["flow"] == "FFJORD":
         with torch.no_grad():
-            z_new = S.manipulate(w if args_json.__dict__["shift_in_w_space"] else z,
-                           support_sets_mask)
+            z_new = S.manipulate(
+                w if args_json.__dict__["shift_in_w_space"] else z, support_sets_mask
+            )
         if args_json.__dict__["shift_in_w_space"]:
             shift = z_new - w
             w = z_new
@@ -193,31 +267,42 @@ def manipulation_linear(use_cuda, shift_steps, dim, G, S, args_json, w, z, curre
             shift = z_new - z
             z = z_new
     else:
-        support_sets_mask = torch.zeros(shift_steps, args_json.__dict__['num_support_sets'])
+        support_sets_mask = torch.zeros(
+            shift_steps, args_json.__dict__["num_support_sets"]
+        )
         for i in range(shift_steps):
-            support_sets_mask[i, dim] = eps if signs == '+' else -eps
+            support_sets_mask[i, dim] = eps if signs == "+" else -eps
         if use_cuda:
             support_sets_mask.cuda()
         with torch.no_grad():
             shift = S(support_sets_mask)
         if args_json.__dict__["shift_in_w_space"]:
             for i in range(shift_steps):
-                w[i+1] = w[i] + shift[i]
-            shift = torch.cat(((w[0]-w[0]).unsqueeze(0), shift))
+                w[i + 1] = w[i] + shift[i]
+            shift = torch.cat(((w[0] - w[0]).unsqueeze(0), shift))
         else:
             for i in range(shift_steps):
-                z[i+1] = z[i] + shift[i]
-            shift = torch.cat(((z[0]-z[0]).unsqueeze(0), shift))
+                z[i + 1] = z[i] + shift[i]
+            shift = torch.cat(((z[0] - z[0]).unsqueeze(0), shift))
 
     latent_shape = w.shape[0] if args_json.__dict__["shift_in_w_space"] else z.shape[0]
-    for i in range(latent_shape-1):
-        if signs == '+':
-            current_path_latent_shifts.append(shift[i+1].unsqueeze(0))
-            current_path_latent_codes.append(w[i+1].unsqueeze(0) if args_json.__dict__["shift_in_w_space"] else z[i+1].unsqueeze(0))
+    for i in range(latent_shape - 1):
+        if signs == "+":
+            current_path_latent_shifts.append(shift[i + 1].unsqueeze(0))
+            current_path_latent_codes.append(
+                w[i + 1].unsqueeze(0)
+                if args_json.__dict__["shift_in_w_space"]
+                else z[i + 1].unsqueeze(0)
+            )
         else:
-            current_path_latent_shifts = [shift[i+1].unsqueeze(0)] + current_path_latent_shifts
-            current_path_latent_codes = [w[i+1].unsqueeze(0) if args_json.__dict__["shift_in_w_space"] else z[i+1].unsqueeze(0)] \
-                + current_path_latent_codes
+            current_path_latent_shifts = [
+                shift[i + 1].unsqueeze(0)
+            ] + current_path_latent_shifts
+            current_path_latent_codes = [
+                w[i + 1].unsqueeze(0)
+                if args_json.__dict__["shift_in_w_space"]
+                else z[i + 1].unsqueeze(0)
+            ] + current_path_latent_codes
     return current_path_latent_codes, current_path_latent_shifts
 
 
@@ -255,28 +340,69 @@ def main():
         --no-cuda     : do not use CUDA
         ================================================================================================================
     """
-    parser = argparse.ArgumentParser(description="WarpedGANSpace latent space traversal script")
-    parser.add_argument('-v', '--verbose', action='store_true', help="set verbose mode on")
+    parser = argparse.ArgumentParser(
+        description="WarpedGANSpace latent space traversal script"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="set verbose mode on"
+    )
     # ================================================================================================================ #
-    parser.add_argument('--exp', type=str, required=True, help="set experiment's model dir (created by `train.py`)")
-    parser.add_argument('--pool', type=str, required=True, help="directory of pre-defined pool of latent codes"
-                                                                "(created by `sample_gan.py`)")
-    parser.add_argument('--shift-steps', type=int, default=16, help="set number of shifts per positive/negative path "
-                                                                    "direction")
-    parser.add_argument('--eps', type=float, default=0.2, help="set shift step magnitude")
-    parser.add_argument('--shift-leap', type=int, default=1,
-                        help="set path shift leap (after how many steps to generate images)")
-    parser.add_argument('--batch-size', type=int, help="set generator batch size (if not set, use the total number of "
-                                                       "images per path)")
-    parser.add_argument('--img-size', type=int, help="set size of saved generated images (if not set, use the output "
-                                                     "size of the respective GAN generator)")
-    parser.add_argument('--img-quality', type=int, default=95, help="set JPEG image quality")
-    parser.add_argument('--gif', action='store_true', help="Create GIF traversals")
-    parser.add_argument('--gif-size', type=int, default=256, help="set gif resolution")
-    parser.add_argument('--gif-fps', type=int, default=30, help="set gif frame rate")
+    parser.add_argument(
+        "--exp",
+        type=str,
+        required=True,
+        help="set experiment's model dir (created by `train.py`)",
+    )
+    parser.add_argument(
+        "--pool",
+        type=str,
+        required=True,
+        help="directory of pre-defined pool of latent codes"
+        "(created by `sample_gan.py`)",
+    )
+    parser.add_argument(
+        "--shift-steps",
+        type=int,
+        default=16,
+        help="set number of shifts per positive/negative path " "direction",
+    )
+    parser.add_argument(
+        "--eps", type=float, default=0.2, help="set shift step magnitude"
+    )
+    parser.add_argument(
+        "--shift-leap",
+        type=int,
+        default=1,
+        help="set path shift leap (after how many steps to generate images)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        help="set generator batch size (if not set, use the total number of "
+        "images per path)",
+    )
+    parser.add_argument(
+        "--img-size",
+        type=int,
+        help="set size of saved generated images (if not set, use the output "
+        "size of the respective GAN generator)",
+    )
+    parser.add_argument(
+        "--img-quality", type=int, default=95, help="set JPEG image quality"
+    )
+    parser.add_argument("--gif", action="store_true", help="Create GIF traversals")
+    parser.add_argument("--gif-size", type=int, default=256, help="set gif resolution")
+    parser.add_argument("--gif-fps", type=int, default=30, help="set gif frame rate")
     # ================================================================================================================ #
-    parser.add_argument('--cuda', dest='cuda', action='store_true', help="use CUDA during training")
-    parser.add_argument('--no-cuda', dest='cuda', action='store_false', help="do NOT use CUDA during training")
+    parser.add_argument(
+        "--cuda", dest="cuda", action="store_true", help="use CUDA during training"
+    )
+    parser.add_argument(
+        "--no-cuda",
+        dest="cuda",
+        action="store_false",
+        help="do NOT use CUDA during training",
+    )
     parser.set_defaults(cuda=True)
     # ================================================================================================================ #
 
@@ -289,35 +415,41 @@ def main():
         raise NotADirectoryError("Invalid given directory: {}".format(args.exp))
 
     # -- args.json file (pre-trained model arguments)
-    args_json_file = osp.join(args.exp, 'args.json')
+    args_json_file = osp.join(args.exp, "args.json")
     if not osp.isfile(args_json_file):
         raise FileNotFoundError("File not found: {}".format(args_json_file))
     args_json = ModelArgs(**json.load(open(args_json_file)))
     gan_type = args_json.__dict__["gan_type"]
 
     # -- models directory (support sets and reconstructor, final or checkpoint files)
-    models_dir = osp.join(args.exp, 'models')
+    models_dir = osp.join(args.exp, "models")
     if not osp.isdir(models_dir):
         raise NotADirectoryError("Invalid models directory: {}".format(models_dir))
 
     # ---- Get all files of models directory
-    models_dir_files = [f for f in os.listdir(models_dir) if osp.isfile(osp.join(models_dir, f))]
+    models_dir_files = [
+        f for f in os.listdir(models_dir) if osp.isfile(osp.join(models_dir, f))
+    ]
 
     # ---- Check for support sets file (final or checkpoint)
-    support_sets_model = osp.join(models_dir, 'support_sets.pt') 
+    support_sets_model = osp.join(models_dir, "support_sets.pt")
 
     # Check given pool directory
-    pool = osp.join('experiments', 'latent_codes')
-    if gan_type == 'BigGAN':
-        biggan_target_classes = ''
+    pool = osp.join("experiments", "latent_codes")
+    if gan_type == "BigGAN":
+        biggan_target_classes = ""
         for c in args_json.__dict__["biggan_target_classes"]:
-            biggan_target_classes += '-{}'.format(c)
+            biggan_target_classes += "-{}".format(c)
         pool = osp.join(pool, gan_type + biggan_target_classes, args.pool)
     else:
         pool = osp.join(pool, gan_type, args.pool)
 
     if not osp.isdir(pool):
-        raise NotADirectoryError("Invalid pool directory: {} -- Please run sample_gan.py to create it.".format(pool))
+        raise NotADirectoryError(
+            "Invalid pool directory: {} -- Please run sample_gan.py to create it.".format(
+                pool
+            )
+        )
 
     # CUDA
     use_cuda = False
@@ -325,34 +457,44 @@ def main():
     if torch.cuda.is_available():
         if args.cuda:
             use_cuda = True
-            torch.set_default_tensor_type('torch.cuda.FloatTensor')
+            torch.set_default_tensor_type("torch.cuda.FloatTensor")
             if torch.cuda.device_count() > 1:
                 multi_gpu = True
         else:
-            print("*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"
-                  "                 Run with --cuda for optimal training speed.")
-            torch.set_default_tensor_type('torch.FloatTensor')
+            print(
+                "*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"
+                "                 Run with --cuda for optimal training speed."
+            )
+            torch.set_default_tensor_type("torch.FloatTensor")
     else:
-        torch.set_default_tensor_type('torch.FloatTensor')
+        torch.set_default_tensor_type("torch.FloatTensor")
 
     # Build GAN generator model and load with pre-trained weights
     if args.verbose:
         print("#. Build GAN generator model G and load with pre-trained weights...")
         print("  \\__GAN type: {}".format(gan_type))
-        print("  \\__Pre-trained weights: {}".format(
-            GAN_WEIGHTS[gan_type]['weights'][args_json.__dict__["stylegan2_resolution"]]
-            if gan_type == 'StyleGAN2' else GAN_WEIGHTS[gan_type]['weights'][GAN_RESOLUTIONS[gan_type]]))
+        print(
+            "  \\__Pre-trained weights: {}".format(
+                GAN_WEIGHTS[gan_type]["weights"][
+                    args_json.__dict__["stylegan2_resolution"]
+                ]
+                if gan_type == "StyleGAN2"
+                else GAN_WEIGHTS[gan_type]["weights"][GAN_RESOLUTIONS[gan_type]]
+            )
+        )
 
-    G = build_gan(gan_type=gan_type,
-                  target_classes=args_json.__dict__["biggan_target_classes"],
-                  stylegan2_resolution=args_json.__dict__["stylegan2_resolution"],
-                  shift_in_w_space=args_json.__dict__["shift_in_w_space"],
-                  use_cuda=use_cuda,
-                  multi_gpu=multi_gpu).eval()
-    
+    G = build_gan(
+        gan_type=gan_type,
+        target_classes=args_json.__dict__["biggan_target_classes"],
+        stylegan2_resolution=args_json.__dict__["stylegan2_resolution"],
+        shift_in_w_space=args_json.__dict__["shift_in_w_space"],
+        use_cuda=use_cuda,
+        multi_gpu=multi_gpu,
+    ).eval()
+
     # Set number of generative paths
     if args_json.__dict__["small_dim"]:
-        if gan_type == 'StyleGAN2' or gan_type == 'ProgGAN':
+        if gan_type == "StyleGAN2" or gan_type == "ProgGAN":
             num_gen_paths = 200
         else:
             num_gen_paths = G.dim_z // 2
@@ -363,34 +505,42 @@ def main():
     if args.verbose:
         print("#. Build support sets model S...")
 
-    if args_json.__dict__["flow"] == 'FFJORD':
-        print('Use FFOJORD')
+    if args_json.__dict__["flow"] == "FFJORD":
+        print("Use FFOJORD")
         S = cnf(G.dim_z, args_json.__dict__["flow_modules"], 1)
-    elif args_json.__dict__["flow"] == 'linear':
-        print('Use LinearGANSpace')
-        S = LatentDeformator(shift_dim=G.dim_z,
-                            input_dim=args_json.__dict__['num_support_sets'],
-                            out_dim=G.dim_z,
-                            type=DeformatorType[args_json.__dict__['deformator']])
-        num_gen_paths = args_json.__dict__['num_support_sets']
+    elif args_json.__dict__["flow"] == "linear":
+        print("Use LinearGANSpace")
+        S = LatentDeformator(
+            shift_dim=G.dim_z,
+            input_dim=args_json.__dict__["num_support_sets"],
+            out_dim=G.dim_z,
+            type=DeformatorType[args_json.__dict__["deformator"]],
+        )
+        num_gen_paths = args_json.__dict__["num_support_sets"]
     else:
-        print('Use RBF')
-        S = SupportSets(num_support_sets=args_json.__dict__["num_support_sets"],
-                        num_support_dipoles=args_json.__dict__["num_support_dipoles"],
-                        support_vectors_dim=G.dim_z,
-                        learn_alphas=args_json.__dict__["learn_alphas"],
-                        learn_gammas=args_json.__dict__["learn_gammas"],
-                        gamma=1.0 / G.dim_z if args_json.__dict__["gamma"] is None else args_json.__dict__["gamma"])
+        print("Use RBF")
+        S = SupportSets(
+            num_support_sets=args_json.__dict__["num_support_sets"],
+            num_support_dipoles=args_json.__dict__["num_support_dipoles"],
+            support_vectors_dim=G.dim_z,
+            learn_alphas=args_json.__dict__["learn_alphas"],
+            learn_gammas=args_json.__dict__["learn_gammas"],
+            gamma=1.0 / G.dim_z
+            if args_json.__dict__["gamma"] is None
+            else args_json.__dict__["gamma"],
+        )
         num_gen_paths = S.num_support_sets
 
     # Load pre-trained weights and set to evaluation mode
     if args.verbose:
         print("  \\__Pre-trained weights: {}".format(support_sets_model))
     if osp.isfile(support_sets_model):
-        S.load_state_dict(torch.load(support_sets_model, map_location=lambda storage, loc: storage))
+        S.load_state_dict(
+            torch.load(support_sets_model, map_location=lambda storage, loc: storage)
+        )
     else:
-        checkpoint = torch.load(osp.join(models_dir, 'checkpoint.pt'))
-        S.load_state_dict(checkpoint['support_sets'])
+        checkpoint = torch.load(osp.join(models_dir, "checkpoint.pt"))
+        S.load_state_dict(checkpoint["support_sets"])
     for param in S.parameters():
         param.requires_grad = False
     if args.verbose:
@@ -402,8 +552,14 @@ def main():
         S = S.cuda()
 
     # Create output dir for generated images
-    out_dir = osp.join(args.exp, 'results', args.pool,
-                       '{}_{}_{}'.format(2 * args.shift_steps, args.eps, round(2 * args.shift_steps * args.eps, 3)))
+    out_dir = osp.join(
+        args.exp,
+        "results",
+        args.pool,
+        "{}_{}_{}".format(
+            2 * args.shift_steps, args.eps, round(2 * args.shift_steps * args.eps, 3)
+        ),
+    )
     os.makedirs(out_dir, exist_ok=True)
 
     # Set default batch size
@@ -418,12 +574,18 @@ def main():
     # Get latent codes from the given pool
     if args.verbose:
         print("#. Use latent codes from pool {}...".format(args.pool))
-    latent_codes_dirs = [dI for dI in os.listdir(pool) if os.path.isdir(os.path.join(pool, dI))]
+    latent_codes_dirs = [
+        dI for dI in os.listdir(pool) if os.path.isdir(os.path.join(pool, dI))
+    ]
     latent_codes_dirs.sort()
     latent_codes = []
     for subdir in latent_codes_dirs:
-        latent_codes.append(torch.load(osp.join(pool, subdir, 'latent_code.pt'),
-                                       map_location=lambda storage, loc: storage))
+        latent_codes.append(
+            torch.load(
+                osp.join(pool, subdir, "latent_code.pt"),
+                map_location=lambda storage, loc: storage,
+            )
+        )
     zs = torch.cat(latent_codes)
     num_of_latent_codes = zs.size()[0]
 
@@ -440,7 +602,11 @@ def main():
         print("  \\__Experiment       : {}".format(osp.basename(osp.abspath(args.exp))))
         print("  \\__Shift magnitude  : {}".format(args.eps))
         print("  \\__Shift steps      : {}".format(2 * args.shift_steps))
-        print("  \\__Traversal length : {}".format(round(2 * args.shift_steps * args.eps, 3)))
+        print(
+            "  \\__Traversal length : {}".format(
+                round(2 * args.shift_steps * args.eps, 3)
+            )
+        )
         print("  \\__Save results at  : {}".format(out_dir))
 
     # Iterate over given latent codes
@@ -450,17 +616,20 @@ def main():
 
         latent_code_hash = latent_codes_dirs[i]
         if args.verbose:
-            update_progress("  \\__.Latent code hash: {} [{:03d}/{:03d}] ".format(latent_code_hash,
-                                                                                  i+1,
-                                                                                  num_of_latent_codes),
-                            num_of_latent_codes, i)
+            update_progress(
+                "  \\__.Latent code hash: {} [{:03d}/{:03d}] ".format(
+                    latent_code_hash, i + 1, num_of_latent_codes
+                ),
+                num_of_latent_codes,
+                i,
+            )
 
         # Create directory for current latent code
-        latent_code_dir = osp.join(out_dir, '{}'.format(latent_code_hash))
+        latent_code_dir = osp.join(out_dir, "{}".format(latent_code_hash))
         os.makedirs(latent_code_dir, exist_ok=True)
 
         # Create directory for storing path images
-        transformed_images_root_dir = osp.join(latent_code_dir, 'paths_images')
+        transformed_images_root_dir = osp.join(latent_code_dir, "paths_images")
         os.makedirs(transformed_images_root_dir, exist_ok=True)
 
         # Keep all latent paths the current latent code (sample)
@@ -475,14 +644,22 @@ def main():
         for dim in range(num_gen_paths):
             if args.verbose:
                 print()
-                update_progress("      \\__path: {:03d}/{:03d} ".format(dim + 1, num_gen_paths), num_gen_paths, dim + 1)
+                update_progress(
+                    "      \\__path: {:03d}/{:03d} ".format(dim + 1, num_gen_paths),
+                    num_gen_paths,
+                    dim + 1,
+                )
 
             # Create shifted latent codes (for the given latent code z) and generate transformed images
             transformed_images = []
 
             # Current path's latent codes and shifts lists
-            current_path_latent_codes = [G.get_w(z_) if args_json.__dict__["shift_in_w_space"] else z_]
-            current_path_latent_shifts = [torch.zeros_like(z_).cuda() if use_cuda else torch.zeros_like(z_)]
+            current_path_latent_codes = [
+                G.get_w(z_) if args_json.__dict__["shift_in_w_space"] else z_
+            ]
+            current_path_latent_shifts = [
+                torch.zeros_like(z_).cuda() if use_cuda else torch.zeros_like(z_)
+            ]
 
             ## ====================================================================================================== ##
             ##                                                                                                        ##
@@ -497,12 +674,45 @@ def main():
                 z = z_.clone()
                 w = None
 
-            if args_json.__dict__["flow"] == 'FFJORD' or args_json.__dict__["flow"] == 'linear':
-                signs = '+'
-                current_path_latent_codes, current_path_latent_shifts = manipulation_linear(use_cuda, args.shift_steps, dim, G, S, args_json, w, z, current_path_latent_codes, current_path_latent_shifts, args.eps, signs)
+            if (
+                args_json.__dict__["flow"] == "FFJORD"
+                or args_json.__dict__["flow"] == "linear"
+            ):
+                signs = "+"
+                current_path_latent_codes, current_path_latent_shifts = (
+                    manipulation_linear(
+                        use_cuda,
+                        args.shift_steps,
+                        dim,
+                        G,
+                        S,
+                        args_json,
+                        w,
+                        z,
+                        current_path_latent_codes,
+                        current_path_latent_shifts,
+                        args.eps,
+                        signs,
+                    )
+                )
             else:
                 eps = args.eps
-                w, z, current_path_latent_codes, current_path_latent_shifts = manipulation(use_cuda, args.shift_steps, dim, G, S, args_json, args, w, z, current_path_latent_codes, current_path_latent_shifts, eps)
+                w, z, current_path_latent_codes, current_path_latent_shifts = (
+                    manipulation(
+                        use_cuda,
+                        args.shift_steps,
+                        dim,
+                        G,
+                        S,
+                        args_json,
+                        args,
+                        w,
+                        z,
+                        current_path_latent_codes,
+                        current_path_latent_shifts,
+                        eps,
+                    )
+                )
 
             # == Negative direction ==
             if args_json.__dict__["shift_in_w_space"]:
@@ -512,22 +722,61 @@ def main():
                 z = z_.clone()
                 w = None
 
-            if args_json.__dict__["flow"] == 'FFJORD' or args_json.__dict__["flow"] == 'linear':
-                signs = '-'
-                current_path_latent_codes, current_path_latent_shifts = manipulation_linear(use_cuda, args.shift_steps, dim, G, S, args_json, w, z, current_path_latent_codes, current_path_latent_shifts, args.eps, signs)
+            if (
+                args_json.__dict__["flow"] == "FFJORD"
+                or args_json.__dict__["flow"] == "linear"
+            ):
+                signs = "-"
+                current_path_latent_codes, current_path_latent_shifts = (
+                    manipulation_linear(
+                        use_cuda,
+                        args.shift_steps,
+                        dim,
+                        G,
+                        S,
+                        args_json,
+                        w,
+                        z,
+                        current_path_latent_codes,
+                        current_path_latent_shifts,
+                        args.eps,
+                        signs,
+                    )
+                )
             else:
                 eps = -args.eps
-                w, z, current_path_latent_codes, current_path_latent_shifts = manipulation(use_cuda, args.shift_steps, dim, G, S, args_json, args, w, z, current_path_latent_codes, current_path_latent_shifts, eps)
+                w, z, current_path_latent_codes, current_path_latent_shifts = (
+                    manipulation(
+                        use_cuda,
+                        args.shift_steps,
+                        dim,
+                        G,
+                        S,
+                        args_json,
+                        args,
+                        w,
+                        z,
+                        current_path_latent_codes,
+                        current_path_latent_shifts,
+                        eps,
+                    )
+                )
             # ========================
 
             # Generate transformed images
             # Split latent codes and shifts in batches
             current_path_latent_codes = torch.cat(current_path_latent_codes)
-            current_path_latent_codes_batches = torch.split(current_path_latent_codes, args.batch_size)
+            current_path_latent_codes_batches = torch.split(
+                current_path_latent_codes, args.batch_size
+            )
             current_path_latent_shifts = torch.cat(current_path_latent_shifts)
-            current_path_latent_shifts_batches = torch.split(current_path_latent_shifts, args.batch_size)
+            current_path_latent_shifts_batches = torch.split(
+                current_path_latent_shifts, args.batch_size
+            )
 
-            if len(current_path_latent_codes_batches) != len(current_path_latent_shifts_batches):
+            if len(current_path_latent_codes_batches) != len(
+                current_path_latent_shifts_batches
+            ):
                 raise AssertionError()
             else:
                 num_batches = len(current_path_latent_codes_batches)
@@ -536,27 +785,46 @@ def main():
             for t in range(num_batches):
                 with torch.no_grad():
                     if args_json.__dict__["shift_in_w_space"]:
-                        transformed_img.append(G(z=current_path_latent_codes_batches[t],
-                                                 latent_is_w=True))
+                        transformed_img.append(
+                            G(z=current_path_latent_codes_batches[t], latent_is_w=True)
+                        )
                     else:
-                        transformed_img.append(G(z=current_path_latent_codes_batches[t]))
+                        transformed_img.append(
+                            G(z=current_path_latent_codes_batches[t])
+                        )
             transformed_img = torch.cat(transformed_img)
 
             # Convert tensors (transformed images) into PIL images
             for t in range(transformed_img.size()[0]):
-                transformed_images.append(tensor2image(transformed_img[t, :].cpu(),
-                                                       img_size=args.img_size,
-                                                       adaptive=True))
+                transformed_images.append(
+                    tensor2image(
+                        transformed_img[t, :].cpu(),
+                        img_size=args.img_size,
+                        adaptive=True,
+                    )
+                )
             # Save all images in `transformed_images` list under `transformed_images_root_dir/<path_<dim>/`
-            transformed_images_dir = osp.join(transformed_images_root_dir, 'path_{:03d}'.format(dim))
+            transformed_images_dir = osp.join(
+                transformed_images_root_dir, "path_{:03d}".format(dim)
+            )
             os.makedirs(transformed_images_dir, exist_ok=True)
             for t in range(len(transformed_images)):
-                transformed_images[t].save(osp.join(transformed_images_dir, '{:06d}.jpg'.format(t)),
-                                           "JPEG", quality=args.img_quality, optimize=True, progressive=True)
+                transformed_images[t].save(
+                    osp.join(transformed_images_dir, "{:06d}.jpg".format(t)),
+                    "JPEG",
+                    quality=args.img_quality,
+                    optimize=True,
+                    progressive=True,
+                )
                 # Save original image
                 if (t == len(transformed_images) // 2) and (dim == 0):
-                    transformed_images[t].save(osp.join(latent_code_dir, 'original_image.jpg'),
-                                               "JPEG", quality=95, optimize=True, progressive=True)
+                    transformed_images[t].save(
+                        osp.join(latent_code_dir, "original_image.jpg"),
+                        "JPEG",
+                        quality=95,
+                        optimize=True,
+                        progressive=True,
+                    )
 
             # Append latent paths
             paths_latent_codes.append(current_path_latent_codes.unsqueeze(0))
@@ -567,7 +835,10 @@ def main():
 
         # Save all latent paths and shifts for the current latent code (sample) in a tensor of size:
         #   paths_latent_codes : torch.Size([num_gen_paths, 2 * args.shift_steps + 1, G.dim_z])
-        torch.save(torch.cat(paths_latent_codes), osp.join(latent_code_dir, 'paths_latent_codes.pt'))
+        torch.save(
+            torch.cat(paths_latent_codes),
+            osp.join(latent_code_dir, "paths_latent_codes.pt"),
+        )
 
         if args.verbose:
             update_stdout(1)
@@ -578,21 +849,35 @@ def main():
     if args.gif:
         # Build results file structure
         structure = dict()
-        generated_img_subdirs = [dI for dI in os.listdir(out_dir) if os.path.isdir(osp.join(out_dir, dI)) and
-                                 dI not in ('paths_gifs', 'validation_results')]
+        generated_img_subdirs = [
+            dI
+            for dI in os.listdir(out_dir)
+            if os.path.isdir(osp.join(out_dir, dI))
+            and dI not in ("paths_gifs", "validation_results")
+        ]
         generated_img_subdirs.sort()
         for img_id in generated_img_subdirs:
             structure.update({img_id: {}})
-            path_images_dir = osp.join(out_dir, '{}'.format(img_id), 'paths_images')
-            path_images_subdirs = [dI for dI in os.listdir(path_images_dir)
-                                   if os.path.isdir(os.path.join(path_images_dir, dI))]
+            path_images_dir = osp.join(out_dir, "{}".format(img_id), "paths_images")
+            path_images_subdirs = [
+                dI
+                for dI in os.listdir(path_images_dir)
+                if os.path.isdir(os.path.join(path_images_dir, dI))
+            ]
             path_images_subdirs.sort()
             for item in path_images_subdirs:
-                structure[img_id].update({item: [dI for dI in os.listdir(osp.join(path_images_dir, item))
-                                                 if osp.isfile(os.path.join(path_images_dir, item, dI))]})
+                structure[img_id].update(
+                    {
+                        item: [
+                            dI
+                            for dI in os.listdir(osp.join(path_images_dir, item))
+                            if osp.isfile(os.path.join(path_images_dir, item, dI))
+                        ]
+                    }
+                )
 
         # Create directory for storing traversal GIFs
-        os.makedirs(osp.join(out_dir, 'paths_gifs'), exist_ok=True)
+        os.makedirs(osp.join(out_dir, "paths_gifs"), exist_ok=True)
 
         # For each interpretable path (warping function), collect the generated image sequences for each original latent
         # code and collate them into a GIF file
@@ -600,52 +885,78 @@ def main():
         num_of_frames = list()
         for dim in range(num_gen_paths):
             if args.verbose:
-                update_progress("  \\__path: {:03d}/{:03d} ".format(dim + 1, num_gen_paths), num_gen_paths, dim + 1)
+                update_progress(
+                    "  \\__path: {:03d}/{:03d} ".format(dim + 1, num_gen_paths),
+                    num_gen_paths,
+                    dim + 1,
+                )
 
             gif_frames = []
             for img_id in structure.keys():
-                original_img_file = osp.join(out_dir, '{}'.format(img_id), 'original_image.jpg')
-                shifted_images_dir = osp.join(out_dir, '{}'.format(img_id), 'paths_images', 'path_{:03d}'.format(dim))
+                original_img_file = osp.join(
+                    out_dir, "{}".format(img_id), "original_image.jpg"
+                )
+                shifted_images_dir = osp.join(
+                    out_dir,
+                    "{}".format(img_id),
+                    "paths_images",
+                    "path_{:03d}".format(dim),
+                )
 
                 row_frames = []
                 img_id_num_of_frames = 0
-                for t in range(len(structure[img_id]['path_{:03d}'.format(dim)])):
+                for t in range(len(structure[img_id]["path_{:03d}".format(dim)])):
                     img_id_num_of_frames += 1
-                for t in range(len(structure[img_id]['path_{:03d}'.format(dim)])):
-                    shifted_img_file = osp.join(shifted_images_dir, '{:06d}.jpg'.format(t))
+                for t in range(len(structure[img_id]["path_{:03d}".format(dim)])):
+                    shifted_img_file = osp.join(
+                        shifted_images_dir, "{:06d}.jpg".format(t)
+                    )
 
                     # Concatenate `original_img_file` and `shifted_img_file`
-                    row_frames.append(get_concat_h(img_file_orig=original_img_file,
-                                                   shifted_img_file=shifted_img_file,
-                                                   size=args.gif_size,
-                                                   img_id=img_id,
-                                                   s=t,
-                                                   shift_steps=img_id_num_of_frames,
-                                                   path_id=dim))
+                    row_frames.append(
+                        get_concat_h(
+                            img_file_orig=original_img_file,
+                            shifted_img_file=shifted_img_file,
+                            size=args.gif_size,
+                            img_id=img_id,
+                            s=t,
+                            shift_steps=img_id_num_of_frames,
+                            path_id=dim,
+                        )
+                    )
                 num_of_frames.append(img_id_num_of_frames)
                 gif_frames.append(row_frames)
 
             if len(set(num_of_frames)) > 1:
-                print("#. Warning: Inconsistent number of frames for image sequences: {}".format(num_of_frames))
+                print(
+                    "#. Warning: Inconsistent number of frames for image sequences: {}".format(
+                        num_of_frames
+                    )
+                )
 
             # Create full GIF frames
             full_gif_frames = []
             for f in range(int(num_of_frames[0])):
-                gif_f = Image.new('RGB', (2 * args.gif_size, len(structure) * args.gif_size))
+                gif_f = Image.new(
+                    "RGB", (2 * args.gif_size, len(structure) * args.gif_size)
+                )
                 for i in range(len(structure)):
                     gif_f.paste(gif_frames[i][f], (0, i * args.gif_size))
                 full_gif_frames.append(gif_f)
 
             # Save gif
-            im = Image.new(mode='RGB', size=(2 * args.gif_size, len(structure) * args.gif_size))
+            im = Image.new(
+                mode="RGB", size=(2 * args.gif_size, len(structure) * args.gif_size)
+            )
             im.save(
-                fp=osp.join(out_dir, 'paths_gifs', 'path_{:03d}.gif'.format(dim)),
+                fp=osp.join(out_dir, "paths_gifs", "path_{:03d}.gif".format(dim)),
                 append_images=full_gif_frames,
                 save_all=True,
                 optimize=True,
                 loop=0,
-                duration=1000 // args.gif_fps)
+                duration=1000 // args.gif_fps,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

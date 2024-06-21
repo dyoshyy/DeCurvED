@@ -4,7 +4,7 @@ import torch.nn as nn
 
 def weights_init(m):
     classname = m.__class__.__name__
-    if classname.find('Linear') != -1 or classname.find('Conv') != -1:
+    if classname.find("Linear") != -1 or classname.find("Conv") != -1:
         nn.init.constant_(m.weight, 0)
         nn.init.normal_(m.bias, 0, 0.01)
 
@@ -77,8 +77,9 @@ class ConcatSquashLinear(nn.Module):
         self._hyper_gate = nn.Linear(1, dim_out)
 
     def forward(self, t, x):
-        return self._layer(x) * torch.sigmoid(self._hyper_gate(t.view(-1, 1))) \
-            + self._hyper_bias(t.view(-1, 1))
+        return self._layer(x) * torch.sigmoid(
+            self._hyper_gate(t.view(-1, 1))
+        ) + self._hyper_bias(t.view(-1, 1))
 
 
 class ConcatScaleLinear(nn.Module):

@@ -8,10 +8,10 @@ from torch.utils.cpp_extension import load
 
 module_path = os.path.dirname(__file__)
 fused = load(
-    'fused',
+    "fused",
     sources=[
-        os.path.join(module_path, 'fused_bias_act.cpp'),
-        os.path.join(module_path, 'fused_bias_act_kernel.cu'),
+        os.path.join(module_path, "fused_bias_act.cpp"),
+        os.path.join(module_path, "fused_bias_act_kernel.cu"),
     ],
 )
 
@@ -40,7 +40,7 @@ class FusedLeakyReLUFunctionBackward(Function):
 
     @staticmethod
     def backward(ctx, gradgrad_input, gradgrad_bias):
-        out, = ctx.saved_tensors
+        (out,) = ctx.saved_tensors
         gradgrad_out = fused.fused_bias_act(
             gradgrad_input, gradgrad_bias, out, 3, 1, ctx.negative_slope, ctx.scale
         )
@@ -61,7 +61,7 @@ class FusedLeakyReLUFunction(Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        out, = ctx.saved_tensors
+        (out,) = ctx.saved_tensors
 
         grad_input, grad_bias = FusedLeakyReLUFunctionBackward.apply(
             grad_output, out, ctx.negative_slope, ctx.scale
@@ -71,7 +71,7 @@ class FusedLeakyReLUFunction(Function):
 
 
 class FusedLeakyReLU(nn.Module):
-    def __init__(self, channel, negative_slope=0.2, scale=2 ** 0.5):
+    def __init__(self, channel, negative_slope=0.2, scale=2**0.5):
         super().__init__()
 
         self.bias = nn.Parameter(torch.zeros(channel))
@@ -82,5 +82,5 @@ class FusedLeakyReLU(nn.Module):
         return fused_leaky_relu(input, self.bias, self.negative_slope, self.scale)
 
 
-def fused_leaky_relu(input, bias, negative_slope=0.2, scale=2 ** 0.5):
+def fused_leaky_relu(input, bias, negative_slope=0.2, scale=2**0.5):
     return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)

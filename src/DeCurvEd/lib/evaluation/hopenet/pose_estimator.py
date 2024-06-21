@@ -4,6 +4,7 @@ Calculate Euler angles (yaw, pitch, roll) using deep network HopeNet: https://gi
 The face detector used is SFD (taken from face-alignment FAN) https://github.com/1adrianb/face-alignment
 
 """
+
 import os
 import numpy as np
 import sys
@@ -25,9 +26,9 @@ from ..sfd.sfd_detector import SFDDetector as FaceDetector
 
 
 class PoseEstimator:
-    def __init__(self, device='cuda'):
+    def __init__(self, device="cuda"):
         self.device = device
-        if self.device == 'cuda':
+        if self.device == "cuda":
             cudnn.benchmark = True
             self.is_cuda = True
         else:
@@ -35,21 +36,32 @@ class PoseEstimator:
         # Load all needed models - Face detector and Pose detector
 
         # Pose model HopeNet
-        self.model_hopenet = Hopenet(torchvision.models.resnet.Bottleneck, [3, 4, 6, 3], 66)
-        self.model_hopenet.load_state_dict(torch.load('models/pretrained/hopenet/hopenet_alpha2.pkl'))
+        self.model_hopenet = Hopenet(
+            torchvision.models.resnet.Bottleneck, [3, 4, 6, 3], 66
+        )
+        self.model_hopenet.load_state_dict(
+            torch.load("models/pretrained/hopenet/hopenet_alpha2.pkl")
+        )
         self.model_hopenet.eval()
         if self.is_cuda:
             self.model_hopenet.cuda()
 
         # SFD face detection
-        self.face_detector = FaceDetector(device=self.device,
-                                          verbose=False,
-                                          path_to_detector='models/pretrained/sfd/s3fd-619a316812.pth')
+        self.face_detector = FaceDetector(
+            device=self.device,
+            verbose=False,
+            path_to_detector="models/pretrained/sfd/s3fd-619a316812.pth",
+        )
 
-        self.transformations = transforms.Compose([transforms.Resize(224),
-                                                   transforms.CenterCrop(224),
-                                                   transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                                        std=[0.229, 0.224, 0.225])])
+        self.transformations = transforms.Compose(
+            [
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
 
     def calculate_pose(self, face, batch_index, image):
         d = face
@@ -84,7 +96,6 @@ class PoseEstimator:
         return yaw, pitch, roll
 
     def detect_pose_batch(self, image):
-
         # image tensor B x 3 x 256 x 256
         detected_faces, error, error_index = self.face_detector.detect_from_batch(image)
         batch_index = 0
@@ -93,4 +104,3 @@ class PoseEstimator:
             batch_index += 1
 
         return yaw, pitch, roll
-

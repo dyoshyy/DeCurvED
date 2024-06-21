@@ -31,28 +31,33 @@ class SNGANWrapper(nn.Module):
 def build_sngan(pretrained_gan_weights, gan_type):
     # SNGAN configuration for MNIST and AnimeFaces datasets
     SNGAN_CONFIG = {
-        'SNGAN_MNIST': {
-            'image_channels': 1,
-            'latent_dim': 128,
-            'model': 'sn_resnet32',
-            'img_size': 32
+        "SNGAN_MNIST": {
+            "image_channels": 1,
+            "latent_dim": 128,
+            "model": "sn_resnet32",
+            "img_size": 32,
         },
-        'SNGAN_AnimeFaces': {
-            'image_channels': 3,
-            'latent_dim': 128,
-            'model': 'sn_resnet64',
-            'img_size': 64
-        }
+        "SNGAN_AnimeFaces": {
+            "image_channels": 3,
+            "latent_dim": 128,
+            "model": "sn_resnet64",
+            "img_size": 64,
+        },
     }
 
     # Build SNGAN generator (for the given dataset)
-    G = make_resnet_generator(resnet_gen_config=SN_RES_GEN_CONFIGS[SNGAN_CONFIG[gan_type]['model']],
-                              img_size=SNGAN_CONFIG[gan_type]['img_size'],
-                              channels=SNGAN_CONFIG[gan_type]['image_channels'],
-                              distribution=NormalDistribution(SNGAN_CONFIG[gan_type]['latent_dim']))
+    G = make_resnet_generator(
+        resnet_gen_config=SN_RES_GEN_CONFIGS[SNGAN_CONFIG[gan_type]["model"]],
+        img_size=SNGAN_CONFIG[gan_type]["img_size"],
+        channels=SNGAN_CONFIG[gan_type]["image_channels"],
+        distribution=NormalDistribution(SNGAN_CONFIG[gan_type]["latent_dim"]),
+    )
 
     # Load pre-trained weights
-    G.load_state_dict(torch.load(pretrained_gan_weights, map_location=torch.device('cpu')), strict=False)
+    G.load_state_dict(
+        torch.load(pretrained_gan_weights, map_location=torch.device("cpu")),
+        strict=False,
+    )
 
     return SNGANWrapper(G)
 
@@ -63,18 +68,21 @@ def build_sngan(pretrained_gan_weights, gan_type):
 ##                                                                                                                    ##
 ########################################################################################################################
 class BigGANWrapper(nn.Module):
-    def __init__(self, G, target_classes=(239, )):
+    def __init__(self, G, target_classes=(239,)):
         super(BigGANWrapper, self).__init__()
         self.G = G
-        self.target_classes = nn.Parameter(data=torch.tensor(target_classes, dtype=torch.int64),
-                                           requires_grad=False)
+        self.target_classes = nn.Parameter(
+            data=torch.tensor(target_classes, dtype=torch.int64), requires_grad=False
+        )
         self.dim_z = self.G.dim_z
 
     def mixed_classes(self, batch_size):
         if len(self.target_classes.data.shape) == 0:
             return self.target_classes.repeat(batch_size).cuda()
         else:
-            return torch.from_numpy(np.random.choice(self.target_classes.cpu(), [batch_size])).cuda()
+            return torch.from_numpy(
+                np.random.choice(self.target_classes.cpu(), [batch_size])
+            ).cuda()
 
     def forward(self, z, shift=None):
         target_classes = self.mixed_classes(z.shape[0]).to(z.device)
@@ -83,20 +91,23 @@ class BigGANWrapper(nn.Module):
 
 def build_biggan(pretrained_gan_weights, target_classes):
     # Get BigGAN configuration
-    with open('models/BigGAN/generator_config.json') as f:
+    with open("models/BigGAN/generator_config.json") as f:
         config = json.load(f)
 
     # Build BigGAN generator for the given configuration
-    config['resolution'] = utils.imsize_dict[config['dataset']]
-    config['n_classes'] = utils.nclass_dict[config['dataset']]
-    config['G_activation'] = utils.activation_dict[config['G_nl']]
-    config['D_activation'] = utils.activation_dict[config['D_nl']]
-    config['skip_init'] = True
-    config['no_optim'] = True
+    config["resolution"] = utils.imsize_dict[config["dataset"]]
+    config["n_classes"] = utils.nclass_dict[config["dataset"]]
+    config["G_activation"] = utils.activation_dict[config["G_nl"]]
+    config["D_activation"] = utils.activation_dict[config["D_nl"]]
+    config["skip_init"] = True
+    config["no_optim"] = True
     G = BigGAN.Generator(**config)
 
     # Load pre-trained weights
-    G.load_state_dict(torch.load(pretrained_gan_weights, map_location=torch.device('cpu')), strict=True)
+    G.load_state_dict(
+        torch.load(pretrained_gan_weights, map_location=torch.device("cpu")),
+        strict=True,
+    )
 
     return BigGANWrapper(G, target_classes)
 
@@ -124,7 +135,7 @@ def build_proggan(pretrained_gan_weights):
     # Build ProgGAN generator model
     G = ProgGANGenerator()
     # Load pre-trained generator model
-    G.load_state_dict(torch.load(pretrained_gan_weights, map_location='cpu'))
+    G.load_state_dict(torch.load(pretrained_gan_weights, map_location="cpu"))
 
     return ProgGANWrapper(G)
 
@@ -169,11 +180,15 @@ class StyleGAN2Wrapper(nn.Module):
         if self.shift_in_w_space:
             if latent_is_w:
                 # Input latent code is in W-space
-                return self.G([z if shift is None else z + shift], input_is_latent=True)[0]
+                return self.G(
+                    [z if shift is None else z + shift], input_is_latent=True
+                )[0]
             else:
                 # Input latent code is in Z-space -- get w code first
                 w = self.G.get_latent(z)
-                return self.G([w if shift is None else w + shift], input_is_latent=True)[0]
+                return self.G(
+                    [w if shift is None else w + shift], input_is_latent=True
+                )[0]
         # The given latent codes and shift vectors lie on the Z-space
         else:
             return self.G([z if shift is None else z + shift], input_is_latent=False)[0]
@@ -181,9 +196,10 @@ class StyleGAN2Wrapper(nn.Module):
 
 def build_stylegan2(pretrained_gan_weights, resolution, shift_in_w_space=False):
     from models.StyleGAN2.model import Generator as StyleGAN2Generator
+
     # Build StyleGAN2 generator model
     G = StyleGAN2Generator(resolution, 512, 8)
     # Load pre-trained weights
-    G.load_state_dict(torch.load(pretrained_gan_weights)['g_ema'], strict=False)
+    G.load_state_dict(torch.load(pretrained_gan_weights)["g_ema"], strict=False)
 
     return StyleGAN2Wrapper(G, shift_in_w_space=shift_in_w_space)

@@ -131,7 +131,8 @@ platformdirs==4.2.2
     # via jupyter-core
 prompt-toolkit==3.0.47
     # via ipython
-protobuf==5.27.0
+protobuf==4.25.0
+    # via decurved
     # via tensorboard
 psutil==6.0.0
     # via ipykernel

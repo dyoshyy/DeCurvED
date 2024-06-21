@@ -16,10 +16,7 @@ wheels/
 .ruff_cache/
 
 # datasets
-datasets/
-
-# results
-results/
+experiments/wip/
 
 # trained models
 *.pth

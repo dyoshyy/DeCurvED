@@ -180,7 +180,7 @@ torch==2.3.0
     # via decurved
     # via torchdiffeq
     # via torchvision
-torchdiffeq==0.2.4
+torchdiffeq==0.2.3
     # via decurved
 torchvision==0.18.0
     # via decurved

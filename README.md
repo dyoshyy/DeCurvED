@@ -4,10 +4,11 @@ Semantic editing of images is the fundamental goal of computer vision. Although 
 
 ## Requirements
 
-- Python v3.8.12
+- Python v3.12
 - numpy v1.22.1
-- PyTorch v1.8.0
+- PyTorch v2.3.0
 - [torchdiffeq v0.2.2](https://github.com/rtqichen/torchdiffeq)
+- protobuf v4.25
 
 Our codes were made by modifying the codes taken from [WarpedGANSpace](https://github.com/chi0tzp/WarpedGANSpace).
 

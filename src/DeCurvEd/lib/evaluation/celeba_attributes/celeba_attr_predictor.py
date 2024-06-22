@@ -200,7 +200,9 @@ class ResNet(nn.Module):
 
 
 def celeba_attr_predictor(
-    attr_file, pretrained="models/pretrained/celeba_attributes/predictor_1024.pth.tar"
+    attr_file, 
+    # pretrained="models/pretrained/celeba_attributes/predictor_1024.pth.tar"
+    weights="modles/pretained/celeba_attributes/predictor_1024.pth.tar"
 ):
     model = ResNet(Bottleneck, [3, 4, 6, 3], attr_file=attr_file)
     init_pretrained_weights(

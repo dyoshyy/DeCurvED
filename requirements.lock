@@ -69,6 +69,8 @@ nest-asyncio==1.6.0
 networkx==3.3
     # via scikit-image
     # via torch
+ninja==1.11.1.1
+    # via decurved
 numpy==1.26.4
     # via contourpy
     # via decurved

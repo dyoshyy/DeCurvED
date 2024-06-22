@@ -55,7 +55,7 @@ class Reconstructor(nn.Module):
         # === ResNet ===
         elif self.reconstructor_type == "ResNet":
             # Define ResNet18 backbone for feature extraction
-            self.features_extractor = resnet18(pretrained=False)
+            self.features_extractor = resnet18(weights=None)
             # Modify ResNet18 first conv layer so as to get 2 rgb images (concatenated as a 6-channel tensor)
             self.features_extractor.conv1 = nn.Conv2d(
                 in_channels=6,

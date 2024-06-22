@@ -6,10 +6,10 @@ dependencies = [
     "numpy==1.26.4",
     "ipykernel>=6.29.4",
     "torch==2.3.0",
+    "torchvision>=0.18.0",
     "torchdiffeq==0.2.3",
     "scipy>=1.13.0",
     "pillow>=10.3.0",
-    "torchvision>=0.18.0",
     "tensorboard>=2.16.2",
     "protobuf==4.25",
     "opencv-python>=4.9.0.80",
@@ -17,6 +17,7 @@ dependencies = [
     "scikit-image>=0.23.2",
     "matplotlib>=3.8.4",
     "pandas>=2.2.2",
+    "ninja>=1.11.1.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

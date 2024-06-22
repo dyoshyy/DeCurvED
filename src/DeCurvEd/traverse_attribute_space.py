@@ -230,7 +230,7 @@ def main():
         id_comp.cuda()
 
     # Define FairFace model for predicting gender, age, and race
-    fairface = torchvision.models.resnet34(pretrained=True)
+    fairface = torchvision.models.resnet34(weights=None)
     fairface.fc = nn.Linear(fairface.fc.in_features, 18)
     fairface.load_state_dict(
         torch.load("models/pretrained/fairface/fairface_alldata_4race_20191111.pt")
@@ -278,7 +278,8 @@ def main():
     # Define CelebA attributes predictor
     celeba_5 = celeba_attr_predictor(
         attr_file="lib/evaluation/celeba_attributes/attributes_5.json",
-        pretrained="models/pretrained/celeba_attributes/eval_predictor.pth.tar",
+        # pretrained="models/pretrained/celeba_attributes/eval_predictor.pth.tar",
+        weights="models/pretrained/celeba_attributes/eval_predictor.pth.tar",
     ).eval()
     celeba_5_trans = transforms.Compose(
         [

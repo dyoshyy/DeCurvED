@@ -147,15 +147,18 @@ def main():
     # Set default tensor type
     if torch.cuda.is_available():
         if args.cuda:
-            torch.set_default_tensor_type("torch.cuda.FloatTensor")
+            # torch.set_default_tensor_type("torch.cuda.FloatTensor")
+            torch.set_default_dtype(torch.float32)
         if not args.cuda:
             print(
                 "*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"
                 "                 Run with --cuda for optimal training speed."
             )
-            torch.set_default_tensor_type("torch.FloatTensor")
+            # torch.set_default_tensor_type("torch.FloatTensor")
+            torch.set_default_dtype(torch.float32)
     else:
-        torch.set_default_tensor_type("torch.FloatTensor")
+        # torch.set_default_tensor_type("torch.FloatTensor")
+        torch.set_default_dtype(torch.float32)
     use_cuda = args.cuda and torch.cuda.is_available()
 
     # Build GAN generator model and load with pre-trained weights

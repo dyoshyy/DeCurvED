@@ -458,7 +458,8 @@ def main():
     if torch.cuda.is_available():
         if args.cuda:
             use_cuda = True
-            torch.set_default_tensor_type("torch.cuda.FloatTensor")
+            # torch.set_default_tensor_type("torch.cuda.FloatTensor")
+            torch.set_default_dtype(torch.float32)
             if torch.cuda.device_count() > 1:
                 multi_gpu = True
         else:
@@ -466,9 +467,11 @@ def main():
                 "*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"
                 "                 Run with --cuda for optimal training speed."
             )
-            torch.set_default_tensor_type("torch.FloatTensor")
+            # torch.set_default_tensor_type("torch.FloatTensor")
+            torch.set_default_dtype(torch.float32)
     else:
-        torch.set_default_tensor_type("torch.FloatTensor")
+        # torch.set_default_tensor_type("torch.FloatTensor")
+        torch.set_default_dtype(torch.float32)
 
     # Build GAN generator model and load with pre-trained weights
     if args.verbose:

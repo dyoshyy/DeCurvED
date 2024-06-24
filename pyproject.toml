@@ -20,7 +20,7 @@ dependencies = [
     "ninja>=1.11.1.1",
 ]
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">= 3.10"
 
 [project.scripts]
 main = 'DeCurvEd:main'

@@ -15,6 +15,7 @@ from lib import (
     cnf,
     create_exp_dir,
 )
+
 from models.gan_load import build_biggan, build_proggan, build_sngan, build_stylegan2
 
 

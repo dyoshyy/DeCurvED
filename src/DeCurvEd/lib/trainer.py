@@ -1,16 +1,18 @@
-import sys
+import json
 import os
 import os.path as osp
-import json
-import torch
-from torch import nn
-import torch.backends.cudnn as cudnn
-import numpy as np
-import time
 import shutil
-from torch.utils.tensorboard import SummaryWriter
+import sys
+import time
+
+import numpy as np
+import torch
 from tensorboard import program
-from .aux import sample_z, TrainingStatTracker, update_progress, update_stdout, sec2dhms
+from torch import nn
+from torch.backends import cudnn
+from torch.utils.tensorboard import SummaryWriter
+
+from .aux import TrainingStatTracker, sample_z, sec2dhms, update_progress, update_stdout
 
 
 class DataParallelPassthrough(nn.DataParallel):
@@ -309,7 +311,7 @@ class Trainer(object):
                 )
                 # latent_is_w is True if self.params.shift_in_w_space is True.
                 img_shifted = (
-                    generator(z_new, latent_is_w=True)
+                    generator(z=z_new, latent_is_w=True)
                     if self.params.shift_in_w_space
                     else generator(z_new)
                 )

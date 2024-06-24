@@ -4,9 +4,9 @@ Semantic editing of images is the fundamental goal of computer vision. Although 
 
 ## Requirements
 
-- Python v3.12
+- Python v3.10
 - numpy v1.22.1
-- PyTorch v2.3.0
+- PyTorch v2.3.1
 - [torchdiffeq v0.2.2](https://github.com/rtqichen/torchdiffeq)
 - protobuf v4.25
 

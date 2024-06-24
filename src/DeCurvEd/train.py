@@ -275,7 +275,7 @@ def main():
                 multi_gpu = True
         else:
             print(
-                "*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"
+                "*** WARNING ***: It looks like you have a CUDA device, but aren't using CUDA.\n"  # noqa: E501
                 "                 Run with --cuda for optimal training speed."
             )
             # torch.set_default_tensor_type("torch.FloatTensor")
@@ -283,6 +283,8 @@ def main():
     else:
         # torch.set_default_tensor_type("torch.FloatTensor")
         torch.set_default_dtype(torch.float32)
+
+    print(use_cuda, multi_gpu)
 
     # Build GAN generator model and load with pre-trained weights
     print("#. Build GAN generator model G and load with pre-trained weights...")

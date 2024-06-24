@@ -180,13 +180,13 @@ tensorboard-data-server==0.7.2
     # via tensorboard
 tifffile==2024.6.18
     # via scikit-image
-torch==2.3.0
+torch==2.3.1
     # via decurved
     # via torchdiffeq
     # via torchvision
 torchdiffeq==0.2.3
     # via decurved
-torchvision==0.18.0
+torchvision==0.18.1
     # via decurved
 tornado==6.4.1
     # via ipykernel
@@ -200,7 +200,7 @@ traitlets==5.14.3
     # via jupyter-client
     # via jupyter-core
     # via matplotlib-inline
-triton==2.3.0
+triton==2.3.1
     # via torch
 typing-extensions==4.11.0
     # via ipython
